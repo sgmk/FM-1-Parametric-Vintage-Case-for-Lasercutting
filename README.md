@@ -1,0 +1,163 @@
+# M-VAVE FM-1 — Vintage Laser-Cut Synth Case
+
+<div align="center">
+
+| Finished Laser-Cut Prototype (`first_prototype_case_FM-1.jpg`) | OpenSCAD 3D Assembly (`vintageCase_3dmodel.jpg`) |
+| :---: | :---: |
+| ![Finished Laser-Cut Prototype](photos/first_prototype_case_FM-1.jpg) | ![Vintage Laser-Cut Case 3D Model](photos/vintageCase_3dmodel.jpg) |
+
+**Parametric OpenSCAD laser-cut enclosure with tilted faceplate and vintage wooden side cheeks for the [M-VAVE (Cuvave) FM-1](https://www.cuvave.com/product?id=fm-1) 6-operator pocket FM synthesizer.**
+
+</div>
+
+---
+
+## Overview
+
+The **M-VAVE FM-1** is a compact 6-operator FM synthesizer inspired by the classic Yamaha DX7, packed with a 27-key silicone keyboard, 8 endless rotary encoders, a 1.54" IPS LCD screen, built-in speaker, and rechargeable LiPo battery — housed in a bright orange injection-molded plastic shell.
+
+This repository replaces the stock plastic shell with a **customizable vintage-style laser-cut desktop enclosure** ([`fm1_lasercut_case.scad`](fm1_lasercut_case.scad)), inspired by the classic tilted synth cheek aesthetic of the **ABK-20** and **eurorack2chistli** cases. It includes a full **3D internal hardware model** ([`fm1_pcb_and_silicone.scad`](fm1_pcb_and_silicone.scad)) of the PCB, silicone pads, encoders, screen, rear ports, and LiPo battery to verify clearances and alignment in real time.
+
+| First Laser-Cut Frontplate Test | Calibrated Rear Panel Ports |
+| :---: | :---: |
+| ![First Laser-Cut Frontplate Test](photos/lasercut_frontplate_test.jpg) | ![Calibrated Rear Panel Ports](photos/backside_plugs_on-off_real.jpg) |
+
+---
+
+## Source of the 3D Reference Models
+
+Before opening and measuring the hardware, the exact X/Y control positions of the front panel elements were extracted from the community 3D scan and CAD reconstruction of the stock M-VAVE FM-1:
+
+* **3D Scan & CAD Model Source:** [**M-Vave FM-1 by Zande Creates on GrabCAD**](https://grabcad.com/library/m-vave-fm-1-1)
+  * Created using a **Revopoint 3D scanner** and caliper measurements (`F:\Revopoint\FM1\FM1.stp`).
+  * Stored locally in [`downloaded/FM1.stp`](downloaded/FM1.stp) and [`downloaded/FM1.obj`](downloaded/FM1.obj) (`901,951` vertices across 19 named sub-meshes: `Screen`, `Oct_Buttons`, `Options`, `Keys`, `Master_Knob`, `Select_Knob`, `Presets_Knob`, `Algorithm_Knob`, `Knob_1`–`Knob_4`, `Power_Switch`, `Tray`, `Body`, `Foot`, `Speaker`, and `Light_Cap`).
+* **Official Product Specs & Manual:** [**Cuvave / M-VAVE FM-1 Official Product Page**](https://www.cuvave.com/product?id=fm-1) (archived in [`docs/official_images/`](docs/official_images/)).
+
+| GrabCAD Reference Render (`downloaded/FM1.png`) | Reconstructed 3D PCB & Silicone Assembly (`fm1_pcb_and_silicone.scad`) |
+| :---: | :---: |
+| ![GrabCAD Reference Render](downloaded/FM1.png) | ![Reconstructed 3D PCB & Silicone Model](photos/pcb-3dmodel_estimated.jpg) |
+
+---
+
+## Teardown & Reverse-Engineering Process
+
+### 1. Disassembly & Screen Ribbon Cable Warning
+
+> [!CAUTION]
+> **Be careful with the 1.54" TFT screen and its FPC connector (`J12`)!**
+> In the stock plastic enclosure, the glass display is glued into the orange top shell while its flexible ribbon cable is plugged into `J12` on the main PCB. Unlock the tiny black plastic FPC latch gently before pulling the ribbon, and pry the glued screen out slowly so you do not snap the black latch or tear the flex cable.
+
+| 10-Pin Screen FPC Connector (`J12`) | Fragile Black FPC Latch | Careful Screen Removal & Test Fit |
+| :---: | :---: | :---: |
+| ![Screen FPC Connector](photos/screenplug.jpg) | ![Broken FPC Latch Warning](photos/broken_screenplug.jpg) | ![Careful Screen Removal](photos/careful_screen-removal.jpg) |
+
+---
+
+### 2. Measuring the PCB, Silicone Pads & Internal Stackup
+
+With the FM-1 disassembled, we measured the physical stackup with calipers and cross-referenced the 6 mounting bosses and port cutouts against the 3D scan:
+
+* **Main PCB (`DX7 MB V07 260918`):** `156.5 × 91.0 × 1.6 mm` with 6× M2.5 mounting holes arranged in a `3 × 2` grid (`Y = 44.5 mm` and `Y = 89.0 mm`).
+* **Three Molded Terracotta Silicone Button Mats:**
+  * Base perimeter flange with alignment pinholes: `1.2 mm` thick
+  * Raised island plateau through the frontplate cutouts: **`5.8 mm`** above the PCB top surface
+  * Total key/button top height: **`8.0 mm`** above the PCB top surface (`2.2 mm` key travel/protrusion above the plateau)
+* **8 Rotary Encoders:** `12.2 × 12.2 × 4.5 mm` metal bodies on the PCB with `Ø6.0 mm` fluted shafts rising `13.2 mm` above the PCB.
+* **Underside Components (below the PCB):**
+  * **`DTP704060` 3.7V 2000mAh (7.4Wh) LiPo Battery:** `60.0 × 40.0 × 7.0 mm` (`8.6 mm` below PCB top surface)
+  * **3× Laid-Down Electrolytic Capacitors (`100µF 16V`)** next to the battery
+  * **Enclosed Speaker Capsule:** `Ø26.5 × 4.2 mm` mounted in the bottom shell (`2-pin JST` header `J13`)
+
+| PCB with Terracotta Silicone Mats | Bare Top PCB (`DX7 MB V07`) |
+| :---: | :---: |
+| ![PCB with Silicone Mats](photos/fm-1_pcb_with-silicone.jpg) | ![Bare Top PCB](photos/fm-1_PCB-front.jpeg) |
+
+| PCB Underside (`DTP704060` LiPo & Mid-Mount Jacks) | Stock Plastic Top & Bottom Shells |
+| :---: | :---: |
+| ![PCB Underside](photos/fm-1_PCB-back.jpeg) | ![Stock Bottom Shell with Speaker](photos/fm-1_case_back.jpg) |
+
+---
+
+### 3. Rear Edge Ports & ON/OFF Switch Calibration
+
+Inspecting the rear edge of the PCB and the stock orange switch cap revealed how the rear ports and power switch are arranged:
+* **Mid-Mount Jacks & USB-C:** The two 3.5mm jacks (`Audio Out` and `MIDI In`) and the `USB-C` receptacle sit inside notched cutouts in the `1.6 mm` PCB so their centerlines lie directly on the **middle axis of the PCB (`Z = -0.8 mm`)**, flush with the rear PCB edge (`Y = 94.6 mm`).
+* **Top-Mounted SMD Power Switch & Offset Cap:** The right-angle SMD slide switch (`J5`) sits **on top of the PCB** (`~2 mm` higher than the PCB middle axis). In the stock plastic enclosure, a tiny molded orange plastic cap ([`photos/original_switch_cap.jpg`](photos/original_switch_cap.jpg)) slips over the SMD switch pin via an upper slot while its round `Ø3.5 mm` button peg steps **down** to exit the case at the lower jack centerline level.
+* **Laser-Cut Case Calibration:**
+  1. The PCB is anchored directly against the inside of the Back Panel (`rear_pcb_clearance = 0.2 mm`) at any `case_depth` or `panel_tilt`.
+  2. The 3.5mm and USB-C cutouts in [`back_panel()`](fm1_lasercut_case.scad) have adjustable **plug barrel clearance** (`jack_barrel_dia = 8.5 mm`, `usbc_barrel_width = 12.8 mm`) so bulky cable overmolds pass into the `3.0 mm` wooden wall and click fully into the jacks.
+  3. Without the stock step-down cap, the switch cutout in the back panel is raised `+2.0 mm` in Z to align directly with the SMD switch on top of the PCB.
+
+| Rear Edge View (Mid-Mount Jacks Centered in PCB) | Original Step-Down Switch Cap | Laser-Cut Rear Panel Fit Check |
+| :---: | :---: | :---: |
+| ![Rear Edge PCB View](photos/pcb_rear_edge_ports.jpg) | ![Original Switch Cap](photos/original_switch_cap.jpg) | ![Laser-Cut Rear Panel Fit](photos/backside_plugs_on-off_real.jpg) |
+
+---
+
+### 4. First Prototype Build & Speaker Upgrade
+
+With the extra internal vertical depth of the tilted vintage enclosure (`case_internal_height = 25 mm` at the front, rising with the `12°` tilt at the rear), the wooden cabinet acts as a resonant acoustic enclosure and provides enough room underneath the PCB to upgrade the tiny `Ø26.5 × 4.2 mm` stock capsule to a **much larger full-range speaker**.
+
+| Prototype Case — Front/3Q View | Prototype Case — Side Cheek Profile | Internal Volume & Bigger Speaker Upgrade |
+| :---: | :---: | :---: |
+| ![First Prototype Case](photos/first_prototype_case_FM-1.jpg) | ![First Prototype Side View](photos/first_protopyecase_side.jpg) | ![Bigger Speaker Upgrade](photos/bigger_speaker.jpg) |
+
+---
+
+## OpenSCAD Files & Customizer Parameters
+
+* **[`fm1_lasercut_case.scad`](fm1_lasercut_case.scad)** — Main parametric laser-cut enclosure generator (3D assembly, exploded view, and 2D laser-cutting layout).
+* **[`fm1_pcb_and_silicone.scad`](fm1_pcb_and_silicone.scad)** — Complete 3D hardware model of the FM-1 internals (can be viewed standalone or inside the case).
+* **[`fm1_lasercut_case.json`](fm1_lasercut_case.json)** — Saved OpenSCAD Customizer presets (`highVintage`, `megaVintage`, `superVintage`).
+
+### Key Customizer Parameters (`highVintage` Default)
+
+| Category | Parameter | Default | Description |
+| :--- | :--- | :---: | :--- |
+| **Case Dimensions & Tilt** | `case_width` | `170.0 mm` | Internal width between the side cheeks (`162 mm` min tight fit) |
+| | `case_depth` | `100.0 mm` | Sloped depth of the top faceplate (`PCB` stays anchored to back wall) |
+| | `case_internal_height` | `25.0 mm` | Internal front wall height (`Z`) |
+| | `panel_tilt` | `12.0°` | Ergonomic desktop tilt angle towards the player |
+| | `pcb_frontplate_distance` | `5.6 mm` | Standoff/spacer distance between PCB top surface and frontplate underside |
+| **Rear Ports & Switch** | `jack_barrel_dia` | `8.5 mm` | 3.5mm MIDI & Audio jack hole diameter for plug barrel clearance |
+| | `usbc_barrel_width` | `12.8 mm` | USB-C cutout width for cable overmold clearance |
+| | `usbc_barrel_height` | `6.8 mm` | USB-C cutout height for cable overmold clearance |
+| | `power_switch_mode` | `"laser_slider"` | `"laser_slider"`, `"finger_notch"`, or `"stock_cap"` |
+| **Vintage Side Cheeks** | `cheek_extension` | `7.0 mm` | Overhang of the sculpted side panels past the main box |
+| | `cheek_radius_top` | `8.0 mm` | Corner radius for the top-front and top-back cheek profile |
+| | `cheek_radius_bottom` | `2.0 mm` | Corner radius for the bottom-front and bottom-back cheek feet |
+| **Material & Laser** | `thickness` | `3.0 mm` | Material thickness for Top, Bottom, Front, and Back panels |
+| | `thickness_sides` | `6.5 mm` | Independent material thickness for the Left & Right wooden cheeks (`0` = same as `thickness`) |
+| | `notch_length` | `30.0 mm` | Target finger-joint tab length |
+| | `kerf` | `0.08 mm` | Laser kerf compensation |
+
+### Exporting 2D DXF / SVG for Laser Cutting
+
+1. Open [`fm1_lasercut_case.scad`](fm1_lasercut_case.scad) in [OpenSCAD](https://openscad.org/).
+2. Adjust `thickness`, `thickness_sides`, and case dimensions in the **Customizer** pane (or select the `highVintage` preset).
+3. Under **Display Mode**, set `part_to_show` to:
+   * `"layout"` for the full 2D sheet (or export `"left"` / `"right"` separately when cutting the side cheeks from thicker wood like `6.5 mm`).
+4. Press **F6** (Render) and choose **File → Export → Export as SVG / DXF**.
+
+---
+
+## Known Issues & To-Do
+
+* [ ] **Better Mechanism for the ON/OFF Switch:**
+  * The tiny right-angle SMD slide switch (`J5`) sits on top of the PCB recessed behind the `3.0 mm` wooden back wall. We need to refine and test a reliable, low-play mechanical slider/lever mechanism (or captive guide) so it can be toggled effortlessly from the outside.
+* [ ] **Improve & Finish the Screen Opening Design:**
+  * Finalize the frontplate window and mounting cradle for the 1.54" TFT display (`SCREEN_CX`, `SCREEN_CY`) — adjusting the aperture to frame only the active display area (`~28 × 28 mm`) or adding a laser-cut underside carrier frame so the glass screen is held flush and secure without stressing the fragile 10-pin FPC connector (`J12`).
+* [ ] **Larger Internal Speaker with Good Acoustic Coupling:**
+  * Design a proper laser-cut speaker baffle / mounting ring and sealed acoustic coupling to the wooden enclosure ([`photos/bigger_speaker.jpg`](photos/bigger_speaker.jpg)) so the upgraded full-range speaker uses the deeper vintage cabinet volume as a true resonance body.
+* [ ] **Frontplate & Rear Panel Engraving:**
+  * Add an engraving layer for the 8 rotary encoder labels (`MASTER`, `SELECT`, `PRESETS`, `ALGORITHM`, `KNOB 1`–`KNOB 4`) and rear port markings.
+
+---
+
+<div align="center">
+
+[![Bruce Lee Showdown](docs/artwork/c64_bruce_showdown.gif)](https://dusseiller.ch/)
+
+*Bruce Lee rules · Open source — hack, remix, share.*
+
+</div>
