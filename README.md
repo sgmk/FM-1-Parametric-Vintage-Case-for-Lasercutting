@@ -30,12 +30,12 @@ Before opening and measuring the hardware, the exact X/Y control positions of th
 
 * **3D Scan & CAD Model Source:** [**M-Vave FM-1 by Zande Creates on GrabCAD**](https://grabcad.com/library/m-vave-fm-1-1)
   * Created using a **Revopoint 3D scanner** and caliper measurements (`F:\Revopoint\FM1\FM1.stp`).
-  * Stored locally in [`downloaded/FM1.stp`](downloaded/FM1.stp) and [`downloaded/FM1.obj`](downloaded/FM1.obj) (`901,951` vertices across 19 named sub-meshes: `Screen`, `Oct_Buttons`, `Options`, `Keys`, `Master_Knob`, `Select_Knob`, `Presets_Knob`, `Algorithm_Knob`, `Knob_1`–`Knob_4`, `Power_Switch`, `Tray`, `Body`, `Foot`, `Speaker`, and `Light_Cap`).
-* **Official Product Specs & Manual:** [**Cuvave / M-VAVE FM-1 Official Product Page**](https://www.cuvave.com/product?id=fm-1) (archived in [`docs/official_images/`](docs/official_images/)).
+  * Stored locally in [`downloaded/3d_model_grabcad/`](downloaded/3d_model_grabcad/) (`FM1.stp` and `FM1.obj`, `901,951` vertices across 19 named sub-meshes: `Screen`, `Oct_Buttons`, `Options`, `Keys`, `Master_Knob`, `Select_Knob`, `Presets_Knob`, `Algorithm_Knob`, `Knob_1`–`Knob_4`, `Power_Switch`, `Tray`, `Body`, `Foot`, `Speaker`, and `Light_Cap`).
+* **Official Product Specs & Manual:** [**Cuvave / M-VAVE FM-1 Official Product Page**](https://www.cuvave.com/product?id=fm-1) (archived in [`downloaded/official_cuvave/`](downloaded/official_cuvave/)).
 
-| GrabCAD Reference Render (`downloaded/FM1.png`) | Reconstructed 3D PCB & Silicone Assembly (`fm1_pcb_and_silicone.scad`) |
+| GrabCAD Reference Render (`downloaded/3d_model_grabcad/FM1.png`) | Reconstructed 3D PCB & Silicone Assembly (`fm1_pcb_and_silicone.scad`) |
 | :---: | :---: |
-| ![GrabCAD Reference Render](downloaded/FM1.png) | ![Reconstructed 3D PCB & Silicone Model](photos/pcb-3dmodel_estimated.jpg) |
+| ![GrabCAD Reference Render](downloaded/3d_model_grabcad/FM1.png) | ![Reconstructed 3D PCB & Silicone Model](photos/pcb-3dmodel_estimated.jpg) |
 
 ---
 
