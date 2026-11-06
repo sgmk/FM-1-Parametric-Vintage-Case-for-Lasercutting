@@ -162,7 +162,7 @@ This project is licensed under the **[Creative Commons Attribution-ShareAlike 4.
 
 <div align="center">
 
-[![Bruce Lee Showdown](docs/artwork/c64_bruce_showdown.gif)](https://dusseiller.ch/)
+[![Bruce Lee Showdown](docs/artwork/c64_bruce_showdown_dark.gif)](https://dusseiller.ch/)
 
 *Bruce Lee rules · Open source — hack, remix, share.*
 
