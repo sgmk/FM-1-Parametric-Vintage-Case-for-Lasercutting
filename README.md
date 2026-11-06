@@ -154,6 +154,12 @@ With the extra internal vertical depth of the tilted vintage enclosure (`case_in
 
 ---
 
+## License
+
+This project is licensed under the **[Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)](LICENSE)**.
+
+---
+
 <div align="center">
 
 [![Bruce Lee Showdown](docs/artwork/c64_bruce_showdown.gif)](https://dusseiller.ch/)
