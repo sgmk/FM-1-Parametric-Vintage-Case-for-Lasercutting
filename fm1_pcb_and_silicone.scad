@@ -23,7 +23,9 @@ show_silicone_oct   = true;
 show_encoders       = true;
 show_screen         = true;
 show_rear_ports     = true;
-show_bottom_parts   = true; // Battery, capacitors, speaker
+show_bottom_parts   = true; // Battery, capacitors, JST headers
+show_speaker        = true; // Show speaker in standalone view
+speaker_model       = "upgrade_50mm"; // [upgrade_50mm:50mm Full-Range Speaker (31mm tall), aliexpress_40mm:40mm 4Ohm 5W Shielded Speaker (22mm tall), stock_26mm:26.5mm Stock Capsule]
 
 // Vertical explode distance between Silicone Mats and PCB (0 = seated on PCB)
 silicone_explode_z  = 0.0; // [0:1:30]
@@ -126,17 +128,24 @@ REAR_USBC_X  = 50.00;
 REAR_MIDI_X  = 63.25;
 REAR_AUDIO_X = 75.00;
 
-// --- Underside Components (Battery & Speaker) ---
+// --- Underside Components (Battery, JST Headers & Speakers) ---
 BAT_X_MIN = 94.30;
 BAT_Y_MIN = 9.00;
 BAT_W     = 60.00; // DTP704060 length
 BAT_D     = 40.00; // DTP704060 width
 BAT_H     = 7.00;  // DTP704060 thickness
 
-SPEAKER_CX = 24.20;
-SPEAKER_CY = 34.50;
+// Stock 26.5mm Speaker Capsule
+SPEAKER_CX = 30.00; // Centered on white silkscreen circle on PCB back
+SPEAKER_CY = 24.50;
 SPEAKER_D  = 26.50;
 SPEAKER_H  = 4.20;
+
+// Upgraded 50mm Full-Range Speaker Driver (2-inch driver)
+BIG_SPK_DIA        = 50.00; // Outer rim & front foam gasket diameter (50mm)
+BIG_SPK_TOTAL_H    = 31.00; // Total height from front gasket to magnet back (31mm)
+BIG_SPK_MAGNET_DIA = 45.00; // Large ferrite magnet diameter (45mm)
+BIG_SPK_MAGNET_H   =  8.00; // Ferrite magnet + back pole plate height (8mm)
 
 // ==============================================================================
 // Helper Geometry Modules
@@ -454,7 +463,282 @@ module fm1_rear_ports() {
     }
 }
 
-module fm1_bottom_components() {
+// ==============================================================================
+// 4. Stock 26.5mm Speaker & Upgraded 40mm Full-Range Speaker 3D Modules
+// ==============================================================================
+
+// Stock 26.5 x 4.2mm flat speaker capsule
+module fm1_stock_speaker_3d(dia=SPEAKER_D, h=SPEAKER_H) {
+    color([0.12, 0.12, 0.14]) {
+        cylinder(d=dia, h=h);
+        for (ang = [-35, 145]) {
+            rotate([0, 0, ang])
+                translate([dia/2, 0, 0])
+                    cylinder(d=5.0, h=h);
+        }
+    }
+}
+
+// Upgraded 50mm Full-Range Speaker Driver (Calibrated from 50x31mm / Ø45x8mm measurements & photos)
+// Origin (0,0,0):
+//   - If face_down == true:  Z=0 is the front foam gasket face (resting on Bottom Panel),
+//                            and Z=total_h is the top of the ferrite magnet.
+//   - If face_down == false: Z=0 is the back of the ferrite magnet (resting on Bottom Panel),
+//                            and Z=total_h is the front foam gasket face.
+module fm1_big_speaker_3d(
+    outer_dia  = BIG_SPK_DIA,        // 50.0 mm
+    total_h    = BIG_SPK_TOTAL_H,    // 31.0 mm
+    magnet_dia = BIG_SPK_MAGNET_DIA, // 45.0 mm
+    magnet_h   = BIG_SPK_MAGNET_H,   //  8.0 mm
+    face_down  = true,
+    show_wires = true
+) {
+    // Proportions matched directly to photos/speaker_50mm_side.jpg & speaker_50mm_3q.jpg
+    gasket_h     = 2.2;                         // Black front rubber/foam gasket thickness
+    rim_lip_h    = 1.3;                         // Stamped steel outer flange lip thickness
+    top_plate_h  = 1.8;                         // Silver steel front pole plate on magnet
+    neck_h       = 2.7;                         // Stepped silver cylindrical collar above top plate
+    neck_dia     = outer_dia * 0.73;            // ~36.5mm basket throat diameter
+    basket_z0    = magnet_h + top_plate_h + neck_h; // ~12.5mm from magnet back
+    basket_z1    = max(basket_z0 + 4.0, total_h - gasket_h - rim_lip_h); // ~27.5mm
+    basket_h     = basket_z1 - basket_z0;       // ~15.0mm flared basket height
+    spider_h     = min(6.0, basket_h * 0.45);   // Corrugated orange spider visible in windows
+    surround_od  = outer_dia * 0.91;            // Outer diameter of rubber half-roll surround (45.5mm)
+    surround_id  = outer_dia * 0.70;            // Inner diameter of rubber surround / cone edge (35.0mm)
+    dustcap_dia  = outer_dia * 0.40;            // Glossy black central dome dust cap (20.0mm)
+    cone_depth   = min(8.0, basket_h * 0.52);   // Depth of the concave paper cone funnel
+
+    // Orient driver according to face_down flag (built in magnet-at-Z=0 frame, then flipped if face_down)
+    translate([0, 0, face_down ? total_h : 0])
+    mirror([0, 0, face_down ? 1 : 0]) {
+
+        // 1. Rear Chamfered Pole Plate & Large Black Ferrite Magnet (Z = 0 .. magnet_h)
+        color([0.22, 0.22, 0.25])
+            cylinder(d1=magnet_dia - 1.2, d2=magnet_dia, h=0.8);
+        color([0.14, 0.14, 0.16])
+            translate([0, 0, 0.8])
+                cylinder(d=magnet_dia, h=max(0.5, magnet_h - 0.8));
+
+        // 2. Galvanized Steel Front Pole Plate + Stepped Basket Collar (Z = magnet_h .. basket_z0)
+        color([0.72, 0.75, 0.78]) {
+            translate([0, 0, magnet_h])
+                cylinder(d1=magnet_dia - 1.5, d2=magnet_dia - 2.5, h=top_plate_h);
+            translate([0, 0, magnet_h + top_plate_h])
+                cylinder(d1=neck_dia + 1.5, d2=neck_dia, h=neck_h);
+        }
+
+        // 3. Corrugated Golden-Orange Spider visible inside the 4 Basket Windows
+        color([0.80, 0.52, 0.22])
+            translate([0, 0, basket_z0 + 0.2])
+                cylinder(d=neck_dia - 1.4, h=spider_h);
+
+        // 4. Flared Stamped Metal Basket with 4 Open Windows & Square Strut Holes
+        color([0.62, 0.65, 0.68]) {
+            difference() {
+                translate([0, 0, basket_z0])
+                    cylinder(d1=neck_dia, d2=outer_dia - 1.4, h=basket_h);
+
+                // Hollow interior of the basket
+                translate([0, 0, basket_z0 - 0.1])
+                    cylinder(d1=neck_dia - 2.2, d2=outer_dia - 3.8, h=basket_h + 0.2);
+
+                // 4 Basket Cutout Windows (at 45, 135, 225, 315 deg, leaving solid struts at 0/90/180/270)
+                for (ang = [45, 135, 225, 315]) {
+                    rotate([0, 0, ang])
+                        translate([neck_dia * 0.22, -outer_dia * 0.19, basket_z0 + 1.0])
+                            cube([outer_dia, outer_dia * 0.38, max(1.0, basket_h - 3.2)]);
+                }
+
+                // 4 Small Square Stamping Holes in the 4 Basket Struts (at 0, 90, 180, 270 deg)
+                for (ang = [0, 90, 180, 270]) {
+                    rotate([0, 0, ang])
+                        translate([0, -1.2, basket_z0 + basket_h * 0.38])
+                            cube([outer_dia, 2.4, 2.4]);
+                }
+            }
+
+            // Stamped Steel Outer Rim Flange (Z = basket_z1 .. total_h - gasket_h)
+            translate([0, 0, basket_z1])
+                difference() {
+                    cylinder(d=outer_dia, h=rim_lip_h);
+                    translate([0, 0, -0.1])
+                        cylinder(d=surround_od - 1.0, h=rim_lip_h + 0.2);
+                }
+        }
+
+        // 5. Hollow Concave Matte-Black Paper Cone Funnel
+        cone_z_top = total_h - gasket_h - 0.3;
+        cone_z_bot = cone_z_top - cone_depth;
+        color([0.16, 0.16, 0.18])
+            difference() {
+                translate([0, 0, cone_z_bot])
+                    cylinder(d1=dustcap_dia * 0.78, d2=surround_id + 1.2, h=cone_depth);
+                // Subtract hollow concave funnel interior so the cone dips down around the dust cap
+                translate([0, 0, cone_z_bot + 1.2])
+                    cylinder(d1=dustcap_dia * 0.72, d2=surround_id - 0.4, h=cone_depth);
+            }
+
+        // 6. Glossy Black Convex Dust Cap Dome Seated Inside the Concave Cone
+        color([0.08, 0.08, 0.10])
+            difference() {
+                translate([0, 0, cone_z_bot + 0.5])
+                    scale([1.0, 1.0, 0.42])
+                        sphere(d=dustcap_dia);
+                translate([0, 0, cone_z_bot - dustcap_dia])
+                    cylinder(d=dustcap_dia + 2, h=dustcap_dia + 0.5);
+            }
+
+        // 7. Half-Roll Black Rubber Surround Torus
+        roll_r  = (surround_od - surround_id) / 4;
+        roll_cr = (surround_od + surround_id) / 4;
+        color([0.12, 0.12, 0.14])
+            translate([0, 0, total_h - gasket_h])
+                scale([1.0, 1.0, 0.85])
+                    rotate_extrude()
+                        translate([roll_cr, 0, 0])
+                            circle(r=roll_r);
+
+        // 8. Outer Black Foam/Rubber Mounting Gasket Ring (Z = total_h - gasket_h .. total_h)
+        color([0.10, 0.10, 0.12])
+            translate([0, 0, total_h - gasket_h])
+                difference() {
+                    cylinder(d=outer_dia, h=gasket_h);
+                    translate([0, 0, -0.1])
+                        cylinder(d=surround_od, h=gasket_h + 0.2);
+                }
+
+        // 9. Solder Terminal Tab + Red/Black Twisted Wire + White 2-Pin JST Plug
+        if (show_wires) {
+            color([0.75, 0.65, 0.25])
+                translate([neck_dia/2 - 0.5, -2.5, basket_z0 + 0.5])
+                    cube([3.5, 5.0, 0.8]);
+            color([0.85, 0.15, 0.12])
+                translate([neck_dia/2 + 2.0, -0.8, basket_z0 - 2.0])
+                    rotate([0, 65, 15])
+                        cylinder(d=1.3, h=14.0);
+            color([0.12, 0.12, 0.14])
+                translate([neck_dia/2 + 2.0, 0.6, basket_z0 - 2.0])
+                    rotate([0, 65, 15])
+                        cylinder(d=1.3, h=14.0);
+            color([0.92, 0.92, 0.90])
+                translate([neck_dia/2 + 13.5, 1.5, basket_z0 - 8.5])
+                    rotate([0, 20, 15])
+                        rrect_3d(5.5, 4.2, 3.2, 0.4, center_xy=true);
+        }
+    }
+}
+
+// AliExpress 40mm 4Ohm 5W Internal-Magnet / Shielded-Cup Full-Range Speaker
+// Dimensions from spec drawing (photos/speaker_40mm_aliexpress.png):
+//   - Outer Rim Diameter: 40.0 mm
+//   - Total Height:       22.0 mm
+//   - Rear Magnet Cup:    23.0 mm diameter (~8.0 mm tall stamped galvanized steel pot)
+//   - Stepped Dish:       31.0 mm upper step -> 36.5 mm lower dish shroud + riveted terminal strip
+module fm1_aliexpress_40mm_speaker_3d(
+    outer_dia  = 40.0,
+    total_h    = 22.0,
+    cup_dia    = 23.0,
+    cup_h      = 8.0,
+    face_down  = true,
+    show_wires = true
+) {
+    gasket_h    = 1.5;
+    rim_lip_h   = 1.3;
+    step1_h     = 2.6;
+    step1_dia   = min(outer_dia - 4.0, cup_dia + 8.0); // ~31mm middle step
+    dish_z0     = cup_h + step1_h;                     // ~10.6mm
+    dish_z1     = max(dish_z0 + 2.0, total_h - gasket_h - rim_lip_h - 3.2); // leaves 3.2mm circumferential acoustic slot
+    surround_od = outer_dia * 0.90;
+    surround_id = outer_dia * 0.68;
+    dustcap_dia = outer_dia * 0.42;
+    cone_depth  = 6.0;
+
+    translate([0, 0, face_down ? total_h : 0])
+    mirror([0, 0, face_down ? 1 : 0]) {
+        // 1. Stamped Galvanized Steel Rear Magnet Cup (Ø23mm x 8mm with rounded top bevel)
+        color([0.74, 0.78, 0.82]) {
+            cylinder(d1=cup_dia - 2.0, d2=cup_dia, h=1.2);
+            translate([0, 0, 1.2])
+                cylinder(d=cup_dia, h=max(0.5, cup_h - 1.2));
+
+            // 2. Stepped Steel Collar (Ø31mm)
+            translate([0, 0, cup_h])
+                cylinder(d1=step1_dia - 1.0, d2=step1_dia, h=step1_h);
+
+            // 3. Flared Galvanized Steel Dish Shroud (Ø31mm -> Ø37.5mm)
+            translate([0, 0, dish_z0])
+                cylinder(d1=step1_dia, d2=outer_dia - 2.2, h=dish_z1 - dish_z0);
+
+            // 4 internal support struts bridging the circumferential gap to the Ø40mm front rim
+            for (ang = [45, 135, 225, 315]) {
+                rotate([0, 0, ang])
+                    translate([outer_dia/2 - 3.5, -2.0, dish_z1 - 0.5])
+                        cube([2.8, 4.0, total_h - gasket_h - dish_z1 + 0.5]);
+            }
+
+            // Outer Ø40mm Stamped Steel Rim Flange
+            translate([0, 0, total_h - gasket_h - rim_lip_h])
+                difference() {
+                    cylinder(d=outer_dia, h=rim_lip_h);
+                    translate([0, 0, -0.1])
+                        cylinder(d=surround_od - 1.0, h=rim_lip_h + 0.2);
+                }
+        }
+
+        // 4. Hollow Concave Black Paper Cone & Dome Dust Cap
+        cone_z_top = total_h - gasket_h - 0.2;
+        cone_z_bot = cone_z_top - cone_depth;
+        color([0.15, 0.15, 0.17])
+            difference() {
+                translate([0, 0, cone_z_bot])
+                    cylinder(d1=dustcap_dia * 0.78, d2=surround_id + 1.0, h=cone_depth);
+                translate([0, 0, cone_z_bot + 1.0])
+                    cylinder(d1=dustcap_dia * 0.72, d2=surround_id - 0.4, h=cone_depth);
+            }
+
+        color([0.08, 0.08, 0.10])
+            difference() {
+                translate([0, 0, cone_z_bot + 0.4])
+                    scale([1.0, 1.0, 0.42])
+                        sphere(d=dustcap_dia);
+                translate([0, 0, cone_z_bot - dustcap_dia])
+                    cylinder(d=dustcap_dia + 2, h=dustcap_dia + 0.4);
+            }
+
+        // 5. Half-Roll Rubber Surround & Front Gasket
+        roll_r  = (surround_od - surround_id) / 4;
+        roll_cr = (surround_od + surround_id) / 4;
+        color([0.12, 0.12, 0.14])
+            translate([0, 0, total_h - gasket_h])
+                scale([1.0, 1.0, 0.85])
+                    rotate_extrude()
+                        translate([roll_cr, 0, 0])
+                            circle(r=roll_r);
+
+        color([0.10, 0.10, 0.12])
+            translate([0, 0, total_h - gasket_h])
+                difference() {
+                    cylinder(d=outer_dia, h=gasket_h);
+                    translate([0, 0, -0.1])
+                        cylinder(d=surround_od, h=gasket_h + 0.2);
+                }
+
+        // 6. Riveted White Terminal Strip + Solder Eyelets on Side of Dish
+        if (show_wires) {
+            color([0.92, 0.90, 0.82])
+                translate([outer_dia/2 - 2.6, -7.0, dish_z1 - 1.2])
+                    cube([2.2, 14.0, 2.8]);
+            color([0.80, 0.80, 0.82])
+                for (sy = [-4.8, 0, 4.8]) {
+                    translate([outer_dia/2 - 0.5, sy, dish_z1 + 0.2])
+                        rotate([0, 90, 0])
+                            cylinder(d=2.2, h=0.8);
+                }
+        }
+    }
+}
+
+module fm1_bottom_components(include_speaker=true) {
     // 1. LiPo Battery DTP704060 (60 x 40 x 7.0mm, taped to bottom of PCB)
     color([0.85, 0.70, 0.10])
         translate([BAT_X_MIN, BAT_Y_MIN, -PCB_THICK - BAT_H])
@@ -474,28 +758,56 @@ module fm1_bottom_components() {
             cube([6.3, 11.0, 6.3]);
     }
 
-    // 3. Enclosed Round Speaker Module (D=26.5mm, under left side of PCB)
-    color([0.12, 0.12, 0.14])
-        translate([SPEAKER_CX, SPEAKER_CY, -PCB_THICK - 4.0 - SPEAKER_H]) {
-            cylinder(d=SPEAKER_D, h=SPEAKER_H);
-            // Mounting ears
-            for (ang = [-35, 145]) {
-                rotate([0, 0, ang])
-                    translate([SPEAKER_D/2, 0, 0])
-                        cylinder(d=5.0, h=SPEAKER_H);
+    // 3. Underside JST Connectors (Important for speaker placement clearance!)
+    // J1: 3-Pin Battery JST Connector + Plug (at X=41.0, Y=38.5, protrudes 5.0mm below PCB)
+    color([0.90, 0.88, 0.82])
+        translate([41.0, 38.5, -PCB_THICK - 5.0])
+            rrect_3d(8.0, 7.6, 5.0, 0.4, center_xy=true);
+    // J13: 2-Pin Speaker JST Header (labeled S+ S- at X=62.5, Y=46.5, protrudes 3.5mm below PCB)
+    color([0.88, 0.85, 0.78])
+        translate([62.5, 46.5, -PCB_THICK - 3.5])
+            rrect_3d(6.2, 4.5, 3.5, 0.4, center_xy=true);
+
+    // 4. White Silkscreen Reference Circle for Stock Speaker on PCB Underside
+    color([0.92, 0.92, 0.92])
+        translate([SPEAKER_CX, SPEAKER_CY, -PCB_THICK - 0.04])
+            difference() {
+                cylinder(d=SPEAKER_D, h=0.04);
+                translate([0, 0, -0.05])
+                    cylinder(d=SPEAKER_D - 0.8, h=0.15);
             }
+
+    // 5. Through-Hole Encoder Mounting Clips/Pins on PCB Underside (protrude 2.0mm below PCB)
+    color([0.72, 0.72, 0.75])
+        for (pos = KNOB_POSITIONS) {
+            translate([pos[0], pos[1], -PCB_THICK - 2.0])
+                rrect_3d(11.5, 11.5, 2.0, 0.5, center_xy=true);
         }
+
+    // 6. Standalone Speaker Preview (when viewing fm1_pcb_and_silicone.scad directly)
+    if (include_speaker && show_speaker) {
+        if (speaker_model == "aliexpress_40mm") {
+            translate([SPEAKER_CX, SPEAKER_CY, -PCB_THICK - 2.0 - 22.0])
+                fm1_aliexpress_40mm_speaker_3d();
+        } else if (speaker_model != "stock_26mm") {
+            translate([SPEAKER_CX, SPEAKER_CY, -PCB_THICK - 2.0 - BIG_SPK_TOTAL_H])
+                fm1_big_speaker_3d();
+        } else {
+            translate([SPEAKER_CX, SPEAKER_CY, -PCB_THICK - 4.0 - SPEAKER_H])
+                fm1_stock_speaker_3d();
+        }
+    }
 }
 
 // ==============================================================================
 // Complete Internal Hardware Assembly Module
 // ==============================================================================
-module fm1_internals_assembly(explode_silicone=0.0) {
+module fm1_internals_assembly(explode_silicone=0.0, include_speaker=true) {
     if (show_pcb)          fm1_pcb();
     if (show_encoders)     fm1_encoders();
     if (show_screen)       fm1_screen_module();
     if (show_rear_ports)   fm1_rear_ports();
-    if (show_bottom_parts) fm1_bottom_components();
+    if (show_bottom_parts) fm1_bottom_components(include_speaker=include_speaker);
 
     translate([0, 0, explode_silicone]) {
         if (show_silicone_keys) fm1_silicone_keys_mat();
@@ -505,5 +817,5 @@ module fm1_internals_assembly(explode_silicone=0.0) {
 }
 
 // Direct Preview when opening this file standalone
-fm1_internals_assembly(explode_silicone=silicone_explode_z);
+fm1_internals_assembly(explode_silicone=silicone_explode_z, include_speaker=true);
 

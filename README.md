@@ -147,8 +147,10 @@ With the extra internal vertical depth of the tilted vintage enclosure (`case_in
   * The tiny right-angle SMD slide switch (`J5`) sits on top of the PCB recessed behind the `3.0 mm` wooden back wall. We need to refine and test a reliable, low-play mechanical slider/lever mechanism (or captive guide) so it can be toggled effortlessly from the outside.
 * [ ] **Improve & Finish the Screen Opening Design:**
   * Finalize the frontplate window and mounting cradle for the 1.54" TFT display (`SCREEN_CX`, `SCREEN_CY`) — adjusting the aperture to frame only the active display area (`~28 × 28 mm`) or adding a laser-cut underside carrier frame so the glass screen is held flush and secure without stressing the fragile 10-pin FPC connector (`J12`).
-* [ ] **Larger Internal Speaker with Good Acoustic Coupling:**
-  * Design a proper laser-cut speaker baffle / mounting ring and sealed acoustic coupling to the wooden enclosure ([`photos/bigger_speaker.jpg`](photos/bigger_speaker.jpg)) so the upgraded full-range speaker uses the deeper vintage cabinet volume as a true resonance body.
+* [x] **Upgraded Speaker (`40 × 22 mm` or `50 × 31 mm`) + `135 Hz` Helmholtz Resonator:**
+  * Both speaker models (`fm1_aliexpress_40mm_speaker_3d` and `fm1_big_speaker_3d`), the scaled 8-arm curved pinwheel grille (`fm1_pinwheel_grille_2d`), the 3D-printed airtight Helmholtz pod (`helmholtz_3d_pod_model`), and the 100% laser-cut stacked wood Helmholtz tunnel (`helmholtz_laser_parts_2d`) are now built into [`fm1_lasercut_case.scad`](fm1_lasercut_case.scad).
+  * **Beginner Visual Guide & Build Instructions:** **[`docs/ACOUSTICS_AND_RESONATOR_PLAN.md`](docs/ACOUSTICS_AND_RESONATOR_PLAN.md)**
+  * **Deep Engineering Math, Thiele-Small Tables & Nomographs:** **[`docs/ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md`](docs/ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md)**
 * [ ] **Frontplate & Rear Panel Engraving:**
   * Add an engraving layer for the 8 rotary encoder labels (`MASTER`, `SELECT`, `PRESETS`, `ALGORITHM`, `KNOB 1`–`KNOB 4`) and rear port markings.
 
