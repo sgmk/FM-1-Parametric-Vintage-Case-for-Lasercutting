@@ -352,34 +352,38 @@ module fm1_interface_cutouts_2d() {
 // ==============================================================================
 // Captive Laser-Cut ON/OFF Slide Switch Extender (2D & 3D)
 // ==============================================================================
-// Sits in the 2.3mm channel on top of the PCB rear edge between the SMD switch
-// metal housing (Y_fm1 = 92.3mm) and the inside of the Back Panel (Y_fm1 = 94.6mm),
-// and is sandwiched vertically in the 3.0mm gap between the PCB top surface and
-// the underside of the Top Faceplate.
-// A 1.6mm fork notch grabs the 1.5mm black SMD switch pin, while a rounded thumb
-// lever protrudes 3.0mm out through the Back Panel.
+// Reaches deep inside the enclosure to clasp the 1.5mm right-angle SMD slide switch
+// peg (J5) on top of the PCB, captive behind the vertical Back Panel.
+// Sandwiched vertically between the PCB top surface and the Top Faceplate.
+// Engineered with heavy-duty 5.5mm wide fork prongs and a 2.0mm+ solid spine so it
+// never snaps along the wood grain under laser cutting or repeated actuation!
 module power_switch_slider_2d() {
-    bar_w    = 12.0;    // Captive flange width inside the back wall (mm)
-    bar_d    =  2.1;    // Fits in the 2.3mm gap between SMD switch body & back wall (mm)
-    handle_w =  4.2;    // Thumb tab width protruding through the back panel slot (mm)
-    handle_d = T + 3.2; // Reaches through the back wall thickness T + 3.2mm outside (mm)
-    pin_w    =  1.65;   // Fork slot width for the 1.5mm black SMD switch pin (mm)
-    pin_d    =  1.6;    // Fork slot depth (mm)
+    flange_w = 13.5;    // Captive inner retention flange width in X (mm)
+    flange_d =  5.2;    // Deep reach inside enclosure towards switch body (mm)
+    handle_w =  5.2;    // Thumb tab width protruding through the Back Panel slot (mm)
+    handle_d = T + 3.5; // Reaches through 3mm back wall + 3.5mm outside for thumb flick (mm)
+    pin_w    =  1.85;   // Fork slot width for 1.5mm switch pin with kerf clearance (mm)
+    pin_d    =  3.0;    // Deep fork slot depth capturing the switch pin securely (mm)
 
     offset_kerf() {
         difference() {
             union() {
-                // Inner captive flange (rides between SMD switch body and inside of back wall)
-                translate([-bar_w/2, -bar_d])
-                    rounded_square_2d([bar_w, bar_d], 0.8);
+                // Inner captive flange with rounded corners (slides inside back panel)
+                translate([-flange_w/2, -flange_d])
+                    rounded_square_2d([flange_w, flange_d], 1.2);
+
+                // Reinforced structural neck fillets bridging flange to thumb handle
+                translate([-handle_w/2 - 1.5, -1.5])
+                    rounded_square_2d([handle_w + 3.0, 1.5], 0.8);
 
                 // Outer thumb lever sticking out through the Back Panel
-                translate([-handle_w/2, -0.8])
-                    rounded_square_2d([handle_w, handle_d + 0.8], 1.2);
+                translate([-handle_w/2, -0.6])
+                    rounded_square_2d([handle_w, handle_d + 0.6], 1.2);
             }
 
-            // Fork notch that grabs the 1.5mm SMD slide switch actuator pin
-            translate([-pin_w/2, -bar_d - 0.1])
+            // Deep fork notch that captures the 1.5mm SMD slide switch actuator pin
+            // Leaves a solid 2.2mm wooden spine between the notch bottom and back wall
+            translate([-pin_w/2, -flange_d - 0.1])
                 square([pin_w, pin_d + 0.1]);
         }
     }
@@ -1114,10 +1118,10 @@ module back_panel() {
                 } else {
                     // 1. ON/OFF Switch Cutout (centered at REAR_SWITCH_Z_IN_BACK on top of PCB)
                     if (power_switch_mode == "laser_slider") {
-                        // Horizontal guide slot for the laser-cut captive slider
-                        slider_slot_h = T / cos(panel_tilt) + 0.5;
-                        translate([REAR_POWER_X - 4.0, REAR_SWITCH_Z_IN_BACK - slider_slot_h/2])
-                            rounded_square_2d([8.0, slider_slot_h], 0.5);
+                        // Horizontal guide slot for the laser-cut captive slider (9.0mm wide for 5.2mm neck + 3.8mm travel)
+                        slider_slot_h = T / cos(panel_tilt) + 0.6;
+                        translate([REAR_POWER_X - 4.5, REAR_SWITCH_Z_IN_BACK - slider_slot_h/2])
+                            rounded_square_2d([9.0, slider_slot_h], 0.6);
                     } else if (power_switch_mode == "stock_cap") {
                         // Slot for stock plastic slider cap (3.5x3.5mm nub + travel) + Charge LED pinhole
                         translate([REAR_POWER_X - 3.3, REAR_SWITCH_Z_IN_BACK - 2.1])
