@@ -628,35 +628,35 @@ module fm1_big_speaker_3d(
     }
 }
 
-// AliExpress 40mm 4Ohm 5W Internal-Magnet / Shielded-Cup Full-Range Speaker
-// Dimensions from spec drawing (photos/speaker_40mm_aliexpress.png):
-//   - Outer Rim Diameter: 40.0 mm
-//   - Total Height:       22.0 mm
-//   - Rear Magnet Cup:    23.0 mm diameter (~8.0 mm tall stamped galvanized steel pot)
-//   - Stepped Dish:       31.0 mm upper step -> 36.5 mm lower dish shroud + riveted terminal strip
+// AliExpress 40mm 4Ohm 5W Shielded Speaker 3D Model
+// Physical calibrated measurements from real hardware:
+//   - Outer Rim Flange:   40.0 mm outer diameter
+//   - Total Height:       21.0 mm from front gasket to back of magnet cup
+//   - Rear Magnet Cup:    23.0 mm diameter x 9.0 mm tall matte black cup
+//   - Terminal Strip:     28.0 mm wide across eyelets (23mm white phenolic strip + 2x 2.5mm eyelets)
 module fm1_aliexpress_40mm_speaker_3d(
     outer_dia  = 40.0,
-    total_h    = 22.0,
+    total_h    = 21.0,
     cup_dia    = 23.0,
-    cup_h      = 8.0,
+    cup_h      = 9.0,
     face_down  = true,
     show_wires = true
 ) {
-    gasket_h    = 1.5;
+    gasket_h    = 1.2;
     rim_lip_h   = 1.3;
     step1_h     = 2.6;
     step1_dia   = min(outer_dia - 4.0, cup_dia + 8.0); // ~31mm middle step
-    dish_z0     = cup_h + step1_h;                     // ~10.6mm
+    dish_z0     = cup_h + step1_h;                     // ~11.6mm
     dish_z1     = max(dish_z0 + 2.0, total_h - gasket_h - rim_lip_h - 3.2); // leaves 3.2mm circumferential acoustic slot
     surround_od = outer_dia * 0.90;
     surround_id = outer_dia * 0.68;
     dustcap_dia = outer_dia * 0.42;
-    cone_depth  = 6.0;
+    cone_depth  = 5.5;
 
     translate([0, 0, face_down ? total_h : 0])
     mirror([0, 0, face_down ? 1 : 0]) {
-        // 1. Stamped Galvanized Steel Rear Magnet Cup (Ø23mm x 8mm with rounded top bevel)
-        color([0.74, 0.78, 0.82]) {
+        // 1. Matte Black Stamped Steel Basket & Rear Magnet Cup (Ø23mm x 9mm with rounded top bevel)
+        color([0.18, 0.18, 0.20]) {
             cylinder(d1=cup_dia - 2.0, d2=cup_dia, h=1.2);
             translate([0, 0, 1.2])
                 cylinder(d=cup_dia, h=max(0.5, cup_h - 1.2));
@@ -665,11 +665,11 @@ module fm1_aliexpress_40mm_speaker_3d(
             translate([0, 0, cup_h])
                 cylinder(d1=step1_dia - 1.0, d2=step1_dia, h=step1_h);
 
-            // 3. Flared Galvanized Steel Dish Shroud (Ø31mm -> Ø37.5mm)
+            // 3. Flared Stamped Steel Basket Dish (Ø31mm -> Ø37.5mm)
             translate([0, 0, dish_z0])
                 cylinder(d1=step1_dia, d2=outer_dia - 2.2, h=dish_z1 - dish_z0);
 
-            // 4 internal support struts bridging the circumferential gap to the Ø40mm front rim
+            // 4 internal support struts bridging the circumferential acoustic windows to the Ø40mm front rim
             for (ang = [45, 135, 225, 315]) {
                 rotate([0, 0, ang])
                     translate([outer_dia/2 - 3.5, -2.0, dish_z1 - 0.5])
@@ -685,21 +685,22 @@ module fm1_aliexpress_40mm_speaker_3d(
                 }
         }
 
-        // 4. Hollow Concave Black Paper Cone & Dome Dust Cap
+        // 4. Golden Woven Composite Cone Ring
         cone_z_top = total_h - gasket_h - 0.2;
         cone_z_bot = cone_z_top - cone_depth;
-        color([0.15, 0.15, 0.17])
+        color([0.72, 0.58, 0.20])
             difference() {
                 translate([0, 0, cone_z_bot])
-                    cylinder(d1=dustcap_dia * 0.78, d2=surround_id + 1.0, h=cone_depth);
-                translate([0, 0, cone_z_bot + 1.0])
-                    cylinder(d1=dustcap_dia * 0.72, d2=surround_id - 0.4, h=cone_depth);
+                    cylinder(d1=dustcap_dia * 0.85, d2=surround_id + 0.5, h=cone_depth);
+                translate([0, 0, cone_z_bot + 0.8])
+                    cylinder(d1=dustcap_dia * 0.80, d2=surround_id - 0.8, h=cone_depth);
             }
 
-        color([0.08, 0.08, 0.10])
+        // Glossy Black Convex Dust Cap
+        color([0.05, 0.05, 0.06])
             difference() {
-                translate([0, 0, cone_z_bot + 0.4])
-                    scale([1.0, 1.0, 0.42])
+                translate([0, 0, cone_z_bot + 0.8])
+                    scale([1.0, 1.0, 0.45])
                         sphere(d=dustcap_dia);
                 translate([0, 0, cone_z_bot - dustcap_dia])
                     cylinder(d=dustcap_dia + 2, h=dustcap_dia + 0.4);
@@ -723,17 +724,18 @@ module fm1_aliexpress_40mm_speaker_3d(
                         cylinder(d=surround_od, h=gasket_h + 0.2);
                 }
 
-        // 6. Riveted White Terminal Strip + Solder Eyelets on Side of Dish
+        // 6. Riveted White Phenolic Terminal Strip (23mm wide body + 2x 2.5mm solder eyelets = 28mm total)
         if (show_wires) {
-            color([0.92, 0.90, 0.82])
-                translate([outer_dia/2 - 2.6, -7.0, dish_z1 - 1.2])
-                    cube([2.2, 14.0, 2.8]);
-            color([0.80, 0.80, 0.82])
-                for (sy = [-4.8, 0, 4.8]) {
-                    translate([outer_dia/2 - 0.5, sy, dish_z1 + 0.2])
-                        rotate([0, 90, 0])
-                            cylinder(d=2.2, h=0.8);
-                }
+            color([0.94, 0.92, 0.85])
+                translate([outer_dia/2 - 2.8, -11.5, dish_z1 - 1.2])
+                    cube([2.2, 23.0, 3.2]);
+            // Silver solder eyelets
+            color([0.80, 0.82, 0.85]) {
+                translate([outer_dia/2 - 2.6, -13.0, dish_z1 - 0.8])
+                    cube([2.0, 2.5, 2.4]);
+                translate([outer_dia/2 - 2.6,  10.5, dish_z1 - 0.8])
+                    cube([2.0, 2.5, 2.4]);
+            }
         }
     }
 }

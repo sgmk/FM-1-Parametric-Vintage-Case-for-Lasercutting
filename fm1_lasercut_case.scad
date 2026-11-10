@@ -242,7 +242,7 @@ eff_spk_dia = (speaker_type == "stock_26mm")      ? 26.5 :
               (speaker_type == "upgrade_50mm")    ? 50.0 :
               speaker_dia;
 eff_spk_h   = (speaker_type == "stock_26mm")      ?  4.2 :
-              (speaker_type == "aliexpress_40mm") ? 22.0 :
+              (speaker_type == "aliexpress_40mm") ? 21.0 :
               (speaker_type == "upgrade_50mm")    ? 31.0 :
               speaker_total_height;
 eff_mag_dia = (speaker_type == "stock_26mm")      ? 16.0 :
@@ -250,7 +250,7 @@ eff_mag_dia = (speaker_type == "stock_26mm")      ? 16.0 :
               (speaker_type == "upgrade_50mm")    ? 45.0 :
               speaker_magnet_dia;
 eff_mag_h   = (speaker_type == "stock_26mm")      ?  2.5 :
-              (speaker_type == "aliexpress_40mm") ?  8.0 :
+              (speaker_type == "aliexpress_40mm") ?  9.0 :
               (speaker_type == "upgrade_50mm")    ?  8.0 :
               speaker_magnet_height;
 spk_box_x   = fm1_ofs_x + speaker_x;
@@ -423,46 +423,52 @@ module speaker_retainer_ring_2d() {
     }
 }
 
-// 2. 100% Laser-Cut 2-Layer Stepped Rim Clamp (2D Layout)
-// Layer 1 (Z=0..3mm): Centers the outer speaker rim (ID = eff_spk_dia + 0.4mm)
-// Layer 2 (Z=3..6mm): Overhangs the outer rim by 1.2mm (ID = eff_spk_dia - 2.5mm) to clamp
-// the metal flange down against the bottom panel while leaving a 100° open arch for solder terminals.
+// 2. 100% Laser-Cut 2-Layer Glued Speaker Mounting Well (2D Layout)
+// Calibrated from calipers on the physical AliExpress 40mm speaker:
+// - Outer diameter: 40.0mm, total height: 21.0mm, magnet pot: Ø23.0mm x 9.0mm
+// - Terminal strip: 28.0mm wide across solder eyelets (centered along +X axis)
+// - Forward membrane bulge: requires >=36.8mm spacer opening so cone never rubs on bottom plate!
+//
+// Layer 1 (Z=0..3mm, glued to Bottom Panel):
+//   Spacer / Standoff Ring with ID = 36.8mm (clears moving surround with 3mm depth!)
+//   and OD = 50.0mm. Leaves a solid 1.6mm flat metal seating shelf for the speaker flange.
+// Layer 2 (Z=3..6mm, glued to Layer 1):
+//   Centering Pocket Ring with ID = 40.5mm (snugly captures Ø40mm metal rim).
+//   Features a 30mm wide notch to clear the 28mm terminal strip and wire leads.
+//
+// Assembly: Glue Layer 1 + Layer 2 to bottom panel with PVA wood glue to form a rigid well.
+// Drop speaker in and seal/glue with silicone, B-7000, or hot melt glue on the 36.8mm shelf.
+
 module stepped_clamp_layer1_2d() {
-    id = eff_spk_dia + 0.4;
-    od_ring = id + 10.0;
+    // Spacer ring inner diameter: exactly 36.8mm for 40mm driver
+    id_spacer = (eff_spk_dia == 40.0) ? 36.8 : (eff_spk_dia - 3.2);
+    od_ring   = eff_spk_dia + 10.0;
     offset_kerf() {
         difference() {
             circle(d = od_ring);
-            circle(d = id);
-            // Wide notch for solder terminal strip & wire lead
-            translate([0, -8.0])
-                square([od_ring, 16.0]);
+            circle(d = id_spacer);
         }
     }
 }
 
 module stepped_clamp_layer2_2d() {
-    // Overhangs outer rim by ~1.2mm radially, leaving inner dish clearance
-    id_clamp = max(eff_mag_dia + 6.0, eff_spk_dia - 2.5);
-    od_ring  = eff_spk_dia + 0.4 + 10.0;
+    id_center = eff_spk_dia + 0.5; // 40.5mm
+    od_ring   = eff_spk_dia + 10.0; // 50.0mm
+    notch_w   = 30.0; // 30mm wide notch (clears 28mm terminal strip across eyelets)
     offset_kerf() {
         difference() {
             circle(d = od_ring);
-            circle(d = id_clamp);
-            // 100-degree open C-clamp arch clearing the side terminal strip
-            polygon([
-                [0, 0],
-                [od_ring * cos(50),  od_ring * sin(50)],
-                [od_ring + 2.0,      0],
-                [od_ring * cos(-50), od_ring * sin(-50)]
-            ]);
+            circle(d = id_center);
+            // Open notch for terminal strip & wires (centered on +X axis)
+            translate([0, -notch_w / 2])
+                square([od_ring, notch_w]);
         }
     }
 }
 
 module stepped_clamp_laser_layers_2d() {
     spacing = 6.0;
-    od_ring = eff_spk_dia + 0.4 + 10.0;
+    od_ring = eff_spk_dia + 10.0;
     translate([0, 0])
         stepped_clamp_layer1_2d();
     translate([0, od_ring + spacing])
@@ -537,18 +543,21 @@ module speaker_spider_clamp_3d() {
 }
 
 // 4. Bottom-panel Helmholtz Port Exit Grille Cutout
+// Precisely aligned with the end of the Helmholtz tunnel / 3D pod deflector ramp
 module helmholtz_port_exit_2d() {
-    id_spk     = eff_spk_dia + 0.4;
-    port_x_ofs = id_spk / 2 + helmholtz_port_length;
-    slot_len_x = 9.0;
-    bar_rib_y  = 2.4;
-    half_slot_y = (helmholtz_port_w - bar_rib_y) / 2;
+    id_spk      = eff_spk_dia + 0.4;
+    port_x_ofs  = id_spk / 2 + helmholtz_port_length;
+    slot_len_x  = 10.0;
+    bar_rib_y   = 2.4;
+    slot_w_y    = (helmholtz_port_w - bar_rib_y) / 2;
 
     translate([port_x_ofs, 0]) {
-        translate([slot_len_x / 2, (bar_rib_y + half_slot_y) / 2])
-            rounded_square_2d([slot_len_x, half_slot_y], 1.8);
-        translate([slot_len_x / 2, -(bar_rib_y + half_slot_y) / 2])
-            rounded_square_2d([slot_len_x, half_slot_y], 1.8);
+        // Upper slot: Y in [+bar_rib_y/2 .. +helmholtz_port_w/2]
+        translate([0, bar_rib_y / 2])
+            rounded_square_2d([slot_len_x, slot_w_y], 1.8);
+        // Lower slot: Y in [-helmholtz_port_w/2 .. -bar_rib_y/2]
+        translate([0, -bar_rib_y / 2 - slot_w_y])
+            rounded_square_2d([slot_len_x, slot_w_y], 1.8);
     }
 }
 
@@ -557,7 +566,8 @@ module helmholtz_laser_wall_layer_2d() {
     id_spk      = eff_spk_dia + 0.4;
     wall_w      = 5.0;
     od_spk      = id_spk + 2 * wall_w;
-    port_x_end  = id_spk / 2 + helmholtz_port_length + 9.0;
+    slot_len_x  = 10.0;
+    port_x_end  = id_spk / 2 + helmholtz_port_length + slot_len_x;
     outer_h_y   = helmholtz_port_w + 2 * wall_w;
 
     offset_kerf() {
@@ -578,7 +588,8 @@ module helmholtz_laser_roof_2d() {
     id_spk      = eff_spk_dia + 0.4;
     wall_w      = 5.0;
     od_spk      = id_spk + 2 * wall_w;
-    port_x_end  = id_spk / 2 + helmholtz_port_length + 9.0;
+    slot_len_x  = 10.0;
+    port_x_end  = id_spk / 2 + helmholtz_port_length + slot_len_x;
     outer_h_y   = helmholtz_port_w + 2 * wall_w;
 
     offset_kerf() {
@@ -621,7 +632,8 @@ module helmholtz_3d_pod_model() {
     total_pod_h  = inner_ceil_z + wall_t;
 
     port_x_start = chamber_w / 2;
-    port_x_end   = id_rim / 2 + helmholtz_port_length + 9.0;
+    slot_len_x   = 10.0;
+    port_x_end   = id_rim / 2 + helmholtz_port_length + slot_len_x;
     duct_outer_w = helmholtz_port_w + 2 * wall_t;
     duct_outer_h = helmholtz_port_h + wall_t;
 
@@ -655,10 +667,10 @@ module helmholtz_3d_pod_model() {
         translate([0, -helmholtz_port_w / 2, -0.1])
             cube([port_x_end, helmholtz_port_w, helmholtz_port_h + 0.1]);
 
-        // Subtract 45-degree swept exit deflector ramp at end of tunnel
-        translate([port_x_end - 1.0, -helmholtz_port_w / 2 - 0.1, 0])
+        // Subtract 45-degree swept exit deflector ramp directly over bottom panel exit slots
+        translate([port_x_end - slot_len_x, -helmholtz_port_w / 2 - 0.1, 0])
             rotate([0, 45, 0])
-                cube([10.0, helmholtz_port_w + 0.2, 10.0]);
+                cube([slot_len_x * 1.5, helmholtz_port_w + 0.2, slot_len_x * 1.5]);
 
         // Subtract speaker rim centering seat on bottom
         translate([0, 0, -0.1])
@@ -1067,8 +1079,9 @@ module assembly(explode = 0.0) {
                 bottom_panel();
 
     // 1b. Speaker Mounted Flat on Bottom Panel (+ Optional Laser-Cut Retainer Ring)
+    spk_seat_z = (resonator_type == "stepped_clamp_laser") ? (2 * T) : T;
     if (show_internals && speaker_type != "none" && speaker_mount == "bottom_panel") {
-        translate([Ts + spk_box_x, spk_box_y, T + speaker_z_offset - explode * 0.4]) {
+        translate([Ts + spk_box_x, spk_box_y, spk_seat_z + speaker_z_offset - explode * 0.45]) {
             if (speaker_type == "aliexpress_40mm") {
                 fm1_aliexpress_40mm_speaker_3d(
                     outer_dia = eff_spk_dia,
