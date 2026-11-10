@@ -603,6 +603,23 @@ module helmholtz_laser_layer1_spacer_2d() {
     }
 }
 
+// Solder Latch Relief Pocket:
+// Gives 3.5mm radial clearance + wire exit for the phenolic solder lug strip on the -X side
+module speaker_solder_latch_relief_2d() {
+    latch_w_y   = 22.0;              // 22mm wide cutout covers the entire white phenolic terminal board
+    latch_r_out = 23.5;              // Extends radially outward to 23.5mm radius (leaves 1.5mm outer wood rim)
+    wire_slot_w =  6.0;              // 6mm center wire exit slot penetrating the outer wall
+    od_spk      = eff_spk_dia + 10.0;
+
+    // Main latch solder pocket
+    translate([-latch_r_out, -latch_w_y / 2])
+        rounded_square_2d([latch_r_out, latch_w_y], 1.5);
+
+    // Through-wall wire exit slot to route speaker wires to PCB
+    translate([-od_spk / 2 - 1.0, -wire_slot_w / 2])
+        square([od_spk / 2 + 1.0, wire_slot_w]);
+}
+
 module helmholtz_laser_layer2_centering_2d() {
     id_center   = eff_spk_dia + 0.5; // 40.5mm
     wall_w      = 5.0;
@@ -610,7 +627,6 @@ module helmholtz_laser_layer2_centering_2d() {
     slot_len_x  = 10.0;
     port_x_end  = eff_spk_dia / 2 + helmholtz_port_length + slot_len_x;
     outer_h_y   = helmholtz_port_w + 2 * wall_w;
-    wire_slot_w = 4.5; // Tiny 4.5mm wire exit slot (easily sealed airtight with a drop of glue/silicone!)
 
     offset_kerf() {
         difference() {
@@ -622,9 +638,8 @@ module helmholtz_laser_layer2_centering_2d() {
             circle(d = id_center);
             translate([0, -helmholtz_port_w / 2])
                 square([port_x_end, helmholtz_port_w]);
-            // Small narrow wire exit notch on -X side (opposite tunnel)
-            translate([-od_spk / 2 - 1.0, -wire_slot_w / 2])
-                square([od_spk / 2 + 1.0, wire_slot_w]);
+            // Solder latch relief pocket & wire exit notch on -X side
+            speaker_solder_latch_relief_2d();
         }
     }
 }
@@ -649,6 +664,9 @@ module helmholtz_laser_layer3_roof_collar_2d() {
             }
             // Collar opening clears speaker basket and wire terminals
             circle(d = id_collar);
+
+            // Solder latch relief pocket on -X side
+            speaker_solder_latch_relief_2d();
         }
     }
 }
@@ -661,6 +679,9 @@ module helmholtz_laser_ring_32mm_2d() {
         difference() {
             circle(d = od_spk);
             circle(d = id_collar);
+
+            // Solder latch relief pocket on -X side
+            speaker_solder_latch_relief_2d();
         }
     }
 }
