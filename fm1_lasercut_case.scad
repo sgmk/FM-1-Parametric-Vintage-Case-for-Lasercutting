@@ -452,16 +452,16 @@ module stepped_clamp_layer1_2d() {
 }
 
 module stepped_clamp_layer2_2d() {
-    id_center = eff_spk_dia + 0.5; // 40.5mm
-    od_ring   = eff_spk_dia + 10.0; // 50.0mm
-    notch_w   = 30.0; // 30mm wide notch (clears 28mm terminal strip across eyelets)
+    id_center   = eff_spk_dia + 0.5; // 40.5mm
+    od_ring     = eff_spk_dia + 10.0; // 50.0mm
+    wire_slot_w = 5.0; // Small 5.0mm wire exit notch (terminal strip sits inside, only wires exit!)
     offset_kerf() {
         difference() {
             circle(d = od_ring);
             circle(d = id_center);
-            // Open notch for terminal strip & wires (centered on +X axis)
-            translate([0, -notch_w / 2])
-                square([od_ring, notch_w]);
+            // Small narrow notch for wire lead exit
+            translate([0, -wire_slot_w / 2])
+                square([od_ring, wire_slot_w]);
         }
     }
 }
@@ -606,7 +606,7 @@ module helmholtz_laser_layer2_centering_2d() {
     slot_len_x  = 10.0;
     port_x_end  = eff_spk_dia / 2 + helmholtz_port_length + slot_len_x;
     outer_h_y   = helmholtz_port_w + 2 * wall_w;
-    notch_w     = 30.0; // 30mm notch on -X side for 28mm terminal strip
+    wire_slot_w = 4.5; // Tiny 4.5mm wire exit slot (easily sealed airtight with a drop of glue/silicone!)
 
     offset_kerf() {
         difference() {
@@ -618,9 +618,9 @@ module helmholtz_laser_layer2_centering_2d() {
             circle(d = id_center);
             translate([0, -helmholtz_port_w / 2])
                 square([port_x_end, helmholtz_port_w]);
-            // Notch on -X side (opposite tunnel) for wires & terminals
-            translate([-od_spk, -notch_w / 2])
-                square([od_spk, notch_w]);
+            // Small narrow wire exit notch on -X side (opposite tunnel)
+            translate([-od_spk / 2 - 1.0, -wire_slot_w / 2])
+                square([od_spk / 2 + 1.0, wire_slot_w]);
         }
     }
 }
@@ -647,10 +647,20 @@ module helmholtz_laser_layer3_roof_collar_2d() {
     }
 }
 
-module helmholtz_laser_layer4_pot_seal_2d() {
-    id_pot  = eff_mag_dia + 0.5; // 23.5mm (slips snugly over 23.0mm steel cup)
-    od_spk  = eff_spk_dia + 10.0; // 50.0mm
+module helmholtz_laser_ring_32mm_2d() {
+    id_collar = (eff_spk_dia == 40.0) ? 32.0 : (eff_mag_dia + 8.0);
+    od_spk    = eff_spk_dia + 10.0; // 50.0mm
+    offset_kerf() {
+        difference() {
+            circle(d = od_spk);
+            circle(d = id_collar);
+        }
+    }
+}
 
+module helmholtz_laser_layer4_pot_seal_2d() {
+    id_pot = eff_mag_dia + 0.5; // 23.5mm (slips snugly over 23.0mm steel cup)
+    od_spk = eff_spk_dia + 10.0; // 50.0mm
     offset_kerf() {
         difference() {
             circle(d = od_spk);
@@ -662,15 +672,26 @@ module helmholtz_laser_layer4_pot_seal_2d() {
 module helmholtz_laser_parts_2d() {
     wall_w     = 5.0;
     outer_h_y  = max(eff_spk_dia + 10.0, helmholtz_port_w + 2 * wall_w);
-    step_y     = outer_h_y + 6.0;
+    step_y     = outer_h_y + 5.0;
+    od_spk     = eff_spk_dia + 10.0;
+    col2_x     = od_spk + helmholtz_port_length + 20.0;
 
+    // Column 1: The 3 Tunnel Layers (L1: Spacer, L2: Centering + Wire Slot, L3: Tunnel Roof)
     translate([0, 0])
         helmholtz_laser_layer1_spacer_2d();
     translate([0, step_y])
         helmholtz_laser_layer2_centering_2d();
     translate([0, 2 * step_y])
         helmholtz_laser_layer3_roof_collar_2d();
-    translate([0, 3 * step_y])
+
+    // Column 2: Riser & Pot Seal Rings (stacks above Layer 3 to reach and seal against 23mm steel cup!)
+    // 1x 32mm basket collar ring
+    translate([col2_x, 0])
+        helmholtz_laser_ring_32mm_2d();
+    // 2x 23.5mm magnet pot seal rings
+    translate([col2_x, step_y])
+        helmholtz_laser_layer4_pot_seal_2d();
+    translate([col2_x, 2 * step_y])
         helmholtz_laser_layer4_pot_seal_2d();
 }
 
@@ -1188,9 +1209,19 @@ module assembly(explode = 0.0) {
                 translate([Ts + spk_box_x, spk_box_y, 3 * T - explode * 0.55])
                     linear_extrude(T)
                         helmholtz_laser_layer3_roof_collar_2d();
-            // Layer 4: Magnet Pot Seal Collar (Z = 9..12mm, ID = 23.5mm seals around steel cup)
+            // Layer 4: Basket Riser Ring (Z = 9..12mm, ID = 32mm)
             color("#3e2723", 0.88)
                 translate([Ts + spk_box_x, spk_box_y, 4 * T - explode * 0.45])
+                    linear_extrude(T)
+                        helmholtz_laser_ring_32mm_2d();
+            // Layer 5: Magnet Pot Seal Collar 1 (Z = 12..15mm, ID = 23.5mm)
+            color("#2e1c18", 0.90)
+                translate([Ts + spk_box_x, spk_box_y, 5 * T - explode * 0.35])
+                    linear_extrude(T)
+                        helmholtz_laser_layer4_pot_seal_2d();
+            // Layer 6: Magnet Pot Seal Collar 2 (Z = 15..18mm, ID = 23.5mm seals around steel cup)
+            color("#1b0000", 0.92)
+                translate([Ts + spk_box_x, spk_box_y, 6 * T - explode * 0.25])
                     linear_extrude(T)
                         helmholtz_laser_layer4_pot_seal_2d();
         } else if (resonator_type == "retainer_ring") {
