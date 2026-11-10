@@ -604,19 +604,20 @@ module helmholtz_laser_layer1_spacer_2d() {
 }
 
 // Solder Latch Relief Pocket:
-// A compact, clean notch (9mm wide x 2.2mm radial depth) giving solder clearance
-// for the speaker's terminal lugs while preserving the strong circular ring hoop!
+// A wide (19mm) but shallow (1.4mm into the wall) inner recess:
+// Frees the full width of the phenolic solder strip while preserving a thick,
+// solid 3.4mm unbroken outer wall all the way around!
 module speaker_solder_latch_relief_2d(through_wall = false) {
-    latch_w_y   =  9.0; // 9.0mm wide notch centered on the solder lugs
-    latch_r_out = 22.2; // Extends radially to 22.2mm radius (leaves 2.8mm solid outer wood wall!)
-    wire_slot_w =  4.0; // 4.0mm narrow wire exit slit through outer wall
+    latch_w_y   = 19.0; // 19.0mm wide to comfortably cover the solder eyelet spacing
+    latch_r_out = 21.65;// Extends only 1.4mm into the inner wall (leaves 3.35mm solid outer wall!)
+    wire_slot_w =  3.5; // Small 3.5mm narrow wire exit slit
     od_spk      = eff_spk_dia + 10.0;
 
-    // Compact inner pocket for solder lugs
+    // Wide, shallow inner relief pocket
     translate([-latch_r_out, -latch_w_y / 2])
         rounded_square_2d([latch_r_out, latch_w_y], 1.2);
 
-    // Optional narrow wire pass-through slot (Layer 2 only)
+    // Only Layer 2 gets the narrow wire exit slit through the wall
     if (through_wall) {
         translate([-od_spk / 2 - 1.0, -wire_slot_w / 2])
             square([od_spk / 2 + 1.0, wire_slot_w]);
