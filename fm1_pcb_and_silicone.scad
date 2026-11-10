@@ -629,112 +629,173 @@ module fm1_big_speaker_3d(
 }
 
 // AliExpress 40mm 4Ohm 5W Shielded Speaker 3D Model
-// Physical calibrated measurements from real hardware:
-//   - Outer Rim Flange:   40.0 mm outer diameter
-//   - Total Height:       21.0 mm from front gasket to back of magnet cup
-//   - Rear Magnet Cup:    23.0 mm diameter x 9.0 mm tall matte black cup
-//   - Terminal Strip:     28.0 mm wide across eyelets (23mm white phenolic strip + 2x 2.5mm eyelets)
+// High-fidelity physical reconstruction matching real hardware photo:
+//   - Outer Rim Flange:   40.0 mm outer diameter with front foam gasket & rubber roll
+//   - Lower Window Tier:  38.0 mm cylindrical basket (Z = 2.2 to 6.5mm) with 4 open acoustic windows
+//   - Horizontal Step 1:  38.0 mm -> 32.0 mm prominent stamped shelf at Z = 6.5mm
+//   - Middle Tier:        32.0 mm cylindrical collar (Z = 7.2 to 11.0mm)
+//   - Horizontal Step 2:  32.0 mm -> 23.0 mm transition at Z = 11.0mm
+//   - Rear Magnet Cup:    23.0 mm diameter x 9.2 mm tall cup with rounded dome top (Z = 11.8 to 21.0mm)
+//   - Terminal Latch:     White phenolic board + 2 silver solder eyelets in the -X window
 module fm1_aliexpress_40mm_speaker_3d(
     outer_dia  = 40.0,
     total_h    = 21.0,
     cup_dia    = 23.0,
-    cup_h      = 9.0,
+    cup_h      = 9.2,
     face_down  = true,
     show_wires = true
 ) {
-    gasket_h    = 1.2;
-    rim_lip_h   = 1.3;
-    step1_h     = 2.6;
-    step1_dia   = min(outer_dia - 4.0, cup_dia + 8.0); // ~31mm middle step
-    dish_z0     = cup_h + step1_h;                     // ~11.6mm
-    dish_z1     = max(dish_z0 + 2.0, total_h - gasket_h - rim_lip_h - 3.2); // leaves 3.2mm circumferential acoustic slot
-    surround_od = outer_dia * 0.90;
-    surround_id = outer_dia * 0.68;
-    dustcap_dia = outer_dia * 0.42;
-    cone_depth  = 5.5;
+    rim_dia     = outer_dia;        // 40.0mm
+    cage_dia    = 38.0;             // 38.0mm cylindrical window tier
+    mid_dia     = 32.0;             // 32.0mm middle cylindrical collar tier
+    pot_dia     = cup_dia;          // 23.0mm rear steel magnet cup
+    pot_h       = cup_h;            // 9.2mm rear cup height
+    gasket_h    = 1.2;              // front foam gasket
+    rim_flange_h= 2.2;              // front metal rim flange thickness
+    shelf1_z    = 6.5;              // height of 38->32mm horizontal step
+    shelf2_z    = total_h - pot_h;  // height of 32->23mm step (~11.8mm)
+    surround_od = 36.2;             // rubber surround outer diameter
+    surround_id = 26.5;             // rubber surround inner diameter
+    dustcap_dia = 16.0;             // center convex dustcap diameter
+    cone_depth  = 5.0;              // cone dish depth
 
-    translate([0, 0, face_down ? total_h : 0])
-    mirror([0, 0, face_down ? 1 : 0]) {
-        // 1. Matte Black Stamped Steel Basket & Rear Magnet Cup (Ø23mm x 9mm with rounded top bevel)
-        color([0.18, 0.18, 0.20]) {
-            cylinder(d1=cup_dia - 2.0, d2=cup_dia, h=1.2);
-            translate([0, 0, 1.2])
-                cylinder(d=cup_dia, h=max(0.5, cup_h - 1.2));
-
-            // 2. Stepped Steel Collar (Ø31mm)
-            translate([0, 0, cup_h])
-                cylinder(d1=step1_dia - 1.0, d2=step1_dia, h=step1_h);
-
-            // 3. Flared Stamped Steel Basket Dish (Ø31mm -> Ø37.5mm)
-            translate([0, 0, dish_z0])
-                cylinder(d1=step1_dia, d2=outer_dia - 2.2, h=dish_z1 - dish_z0);
-
-            // 4 internal support struts bridging the circumferential acoustic windows to the Ø40mm front rim
-            for (ang = [45, 135, 225, 315]) {
-                rotate([0, 0, ang])
-                    translate([outer_dia/2 - 3.5, -2.0, dish_z1 - 0.5])
-                        cube([2.8, 4.0, total_h - gasket_h - dish_z1 + 0.5]);
+    translate([0, 0, face_down ? 0 : total_h])
+    mirror([0, 0, face_down ? 0 : 1]) {
+        // ----------------------------------------------------------------------
+        // 1. Matte Black Stamped Steel Basket & Rear Magnet Pot
+        // ----------------------------------------------------------------------
+        color([0.16, 0.16, 0.18]) {
+            // A. Outer Ø40mm Front Rim Flange
+            difference() {
+                cylinder(d = rim_dia, h = rim_flange_h);
+                translate([0, 0, -0.1])
+                    cylinder(d = surround_od - 0.5, h = rim_flange_h + 0.2);
             }
 
-            // Outer Ø40mm Stamped Steel Rim Flange
-            translate([0, 0, total_h - gasket_h - rim_lip_h])
-                difference() {
-                    cylinder(d=outer_dia, h=rim_lip_h);
-                    translate([0, 0, -0.1])
-                        cylinder(d=surround_od - 1.0, h=rim_lip_h + 0.2);
+            // B. Ø38mm Cylindrical Window Tier with 4 Open Acoustic Windows
+            difference() {
+                // Cylindrical shell
+                translate([0, 0, rim_flange_h])
+                    cylinder(d = cage_dia, h = shelf1_z - rim_flange_h);
+                translate([0, 0, rim_flange_h - 0.1])
+                    cylinder(d = cage_dia - 2.4, h = shelf1_z - rim_flange_h + 0.2);
+
+                // 4 Large Rectangular Acoustic Cutout Windows
+                for (ang = [0, 90, 180, 270]) {
+                    rotate([0, 0, ang])
+                        translate([0, 0, rim_flange_h + 0.5])
+                            cube([cage_dia + 2.0, 15.5, shelf1_z - rim_flange_h - 0.8], center = true);
                 }
+            }
+
+            // C. Horizontal Step 1: Distinct shelf stepping in from Ø38mm to Ø32mm
+            translate([0, 0, shelf1_z])
+                difference() {
+                    cylinder(d = cage_dia, h = 0.8);
+                    translate([0, 0, -0.1])
+                        cylinder(d = mid_dia - 2.4, h = 1.0);
+                }
+
+            // D. Ø32mm Middle Cylindrical Tier
+            translate([0, 0, shelf1_z + 0.7])
+                difference() {
+                    cylinder(d = mid_dia, h = shelf2_z - shelf1_z - 0.6);
+                    translate([0, 0, -0.1])
+                        cylinder(d = mid_dia - 2.4, h = shelf2_z - shelf1_z - 0.4);
+                }
+
+            // E. Horizontal Step 2: Step in from Ø32mm to Ø23mm at magnet cup base
+            translate([0, 0, shelf2_z])
+                difference() {
+                    cylinder(d = mid_dia, h = 0.8);
+                    translate([0, 0, -0.1])
+                        cylinder(d = pot_dia - 2.4, h = 1.0);
+                }
+
+            // F. Ø23mm Rear Shielded Magnet Pot with Smooth Rounded Dome Top
+            translate([0, 0, shelf2_z + 0.8]) {
+                cylinder(d = pot_dia, h = max(1.0, pot_h - 2.6));
+                // Rounded dome cap on top
+                translate([0, 0, pot_h - 2.6])
+                    cylinder(d1 = pot_dia, d2 = pot_dia - 3.2, h = 1.8);
+                translate([0, 0, pot_h - 0.8])
+                    cylinder(d = pot_dia - 3.2, h = 0.8);
+            }
         }
 
-        // 4. Golden Woven Composite Cone Ring
-        cone_z_top = total_h - gasket_h - 0.2;
-        cone_z_bot = cone_z_top - cone_depth;
-        color([0.72, 0.58, 0.20])
+        // ----------------------------------------------------------------------
+        // 2. Golden Woven Composite Cone (visible through windows)
+        // ----------------------------------------------------------------------
+        cone_z_bot = rim_flange_h + 0.6;
+        cone_z_top = shelf1_z + 0.5;
+        color([0.76, 0.62, 0.22]) {
             difference() {
                 translate([0, 0, cone_z_bot])
-                    cylinder(d1=dustcap_dia * 0.85, d2=surround_id + 0.5, h=cone_depth);
-                translate([0, 0, cone_z_bot + 0.8])
-                    cylinder(d1=dustcap_dia * 0.80, d2=surround_id - 0.8, h=cone_depth);
+                    cylinder(d1 = surround_id + 0.5, d2 = dustcap_dia + 1.0, h = cone_depth);
+                translate([0, 0, cone_z_bot - 0.1])
+                    cylinder(d1 = surround_id - 0.8, d2 = dustcap_dia, h = cone_depth + 0.2);
             }
+        }
 
-        // Glossy Black Convex Dust Cap
-        color([0.05, 0.05, 0.06])
-            difference() {
-                translate([0, 0, cone_z_bot + 0.8])
-                    scale([1.0, 1.0, 0.45])
-                        sphere(d=dustcap_dia);
-                translate([0, 0, cone_z_bot - dustcap_dia])
-                    cylinder(d=dustcap_dia + 2, h=dustcap_dia + 0.4);
-            }
+        // ----------------------------------------------------------------------
+        // 3. Glossy Black Convex Dust Cap
+        // ----------------------------------------------------------------------
+        color([0.08, 0.08, 0.10]) {
+            translate([0, 0, cone_z_bot + cone_depth - 0.5])
+                scale([1.0, 1.0, 0.45])
+                    sphere(d = dustcap_dia);
+        }
 
-        // 5. Half-Roll Rubber Surround & Front Gasket
+        // ----------------------------------------------------------------------
+        // 4. Half-Roll Rubber Surround & Front Foam Gasket
+        // ----------------------------------------------------------------------
         roll_r  = (surround_od - surround_id) / 4;
         roll_cr = (surround_od + surround_id) / 4;
-        color([0.12, 0.12, 0.14])
-            translate([0, 0, total_h - gasket_h])
+        color([0.12, 0.12, 0.14]) {
+            translate([0, 0, gasket_h])
                 scale([1.0, 1.0, 0.85])
                     rotate_extrude()
                         translate([roll_cr, 0, 0])
-                            circle(r=roll_r);
+                            circle(r = roll_r);
+        }
 
-        color([0.10, 0.10, 0.12])
-            translate([0, 0, total_h - gasket_h])
-                difference() {
-                    cylinder(d=outer_dia, h=gasket_h);
-                    translate([0, 0, -0.1])
-                        cylinder(d=surround_od, h=gasket_h + 0.2);
-                }
+        // Front soft gasket (Z = 0 to 1.2mm)
+        color([0.10, 0.10, 0.12]) {
+            difference() {
+                cylinder(d = rim_dia, h = gasket_h);
+                translate([0, 0, -0.1])
+                    cylinder(d = surround_od - 0.2, h = gasket_h + 0.2);
+            }
+        }
 
-        // 6. Riveted White Phenolic Terminal Strip (23mm wide body + 2x 2.5mm solder eyelets = 28mm total)
+        // ----------------------------------------------------------------------
+        // 5. White Phenolic Terminal Strip + Solder Eyelets (seated in -X window)
+        // ----------------------------------------------------------------------
         if (show_wires) {
-            color([0.94, 0.92, 0.85])
-                translate([outer_dia/2 - 2.8, -11.5, dish_z1 - 1.2])
-                    cube([2.2, 23.0, 3.2]);
+            // White phenolic terminal backing board
+            color([0.94, 0.92, 0.85]) {
+                translate([-cage_dia/2 + 0.4, 0, rim_flange_h + 1.8])
+                    cube([1.8, 18.0, 3.2], center = true);
+            }
+
             // Silver solder eyelets
-            color([0.80, 0.82, 0.85]) {
-                translate([outer_dia/2 - 2.6, -13.0, dish_z1 - 0.8])
-                    cube([2.0, 2.5, 2.4]);
-                translate([outer_dia/2 - 2.6,  10.5, dish_z1 - 0.8])
-                    cube([2.0, 2.5, 2.4]);
+            color([0.82, 0.84, 0.88]) {
+                translate([-cage_dia/2 - 0.2, -5.5, rim_flange_h + 1.8])
+                    rotate([0, 90, 0])
+                        cylinder(d = 2.4, h = 1.2, center = true);
+                translate([-cage_dia/2 - 0.2,  5.5, rim_flange_h + 1.8])
+                    rotate([0, 90, 0])
+                        cylinder(d = 2.4, h = 1.2, center = true);
+            }
+
+            // Copper tinsel lead wires going from eyelets to cone
+            color([0.85, 0.45, 0.15]) {
+                translate([-cage_dia/2 + 2.0, -4.5, rim_flange_h + 1.6])
+                    rotate([0, 30, -25])
+                        cylinder(d = 0.5, h = 6.0);
+                translate([-cage_dia/2 + 2.0,  4.5, rim_flange_h + 1.6])
+                    rotate([0, 30,  25])
+                        cylinder(d = 0.5, h = 6.0);
             }
         }
     }
