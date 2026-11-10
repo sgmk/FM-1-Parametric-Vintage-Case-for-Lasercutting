@@ -120,7 +120,7 @@ kerf = 0.08; // [0.0:0.01:0.4]
 
 /* [Display Mode] */
 // What to render
-part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), helmholtz_laser:Laser-Cut Helmholtz Resonator Parts (2D), stepped_clamp:Laser-Cut 2-Layer Stepped Clamp (2D), speaker_ring:Laser-Cut Speaker Retainer Ring (2D), helmholtz_pod:3D-Printed Helmholtz Resonator Tub (3D STL), spider_clamp:3D-Printed Spider Clamp Bridge (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
+part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, helmholtz_3d:Dedicated 3D Speaker & Laser Helmholtz Duct View, helmholtz_3d_exploded:Dedicated 3D Exploded Speaker & Duct Stack, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), helmholtz_laser:Laser-Cut Helmholtz Resonator Parts (2D), stepped_clamp:Laser-Cut 2-Layer Stepped Clamp (2D), speaker_ring:Laser-Cut Speaker Retainer Ring (2D), helmholtz_pod:3D-Printed Helmholtz Resonator Tub (3D STL), spider_clamp:3D-Printed Spider Clamp Bridge (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
 
 // Show the 3D FM-1 PCB, silicone pads, encoders, screen & battery inside the case
 show_internals = true;
@@ -630,7 +630,9 @@ module helmholtz_laser_layer2_centering_2d() {
 }
 
 module helmholtz_laser_layer3_roof_collar_2d() {
-    id_collar   = (eff_spk_dia == 40.0) ? 32.0 : (eff_mag_dia + 8.0);
+    // Widened to 40.5mm so it drops right over the AliExpress 40mm speaker basket & terminals
+    // while the solid wood roof completely caps and seals the 6mm side tunnel!
+    id_collar   = (eff_spk_dia == 40.0) ? 40.5 : (eff_spk_dia + 0.5);
     wall_w      = 5.0;
     od_spk      = eff_spk_dia + 10.0;
     slot_len_x  = 10.0;
@@ -645,14 +647,15 @@ module helmholtz_laser_layer3_roof_collar_2d() {
                 translate([0, -outer_h_y / 2])
                     square([port_x_end + wall_w, outer_h_y]);
             }
-            // Collar opening resting on the middle basket shoulder
+            // Collar opening clears speaker basket and wire terminals
             circle(d = id_collar);
         }
     }
 }
 
 module helmholtz_laser_ring_32mm_2d() {
-    id_collar = (eff_spk_dia == 40.0) ? 32.0 : (eff_mag_dia + 8.0);
+    // Mid-basket riser ring (ID = 34.0mm clears tapering stamped basket dish)
+    id_collar = (eff_spk_dia == 40.0) ? 34.0 : (eff_mag_dia + 10.0);
     od_spk    = eff_spk_dia + 10.0; // 50.0mm
     offset_kerf() {
         difference() {
@@ -689,13 +692,15 @@ module helmholtz_laser_parts_2d() {
         helmholtz_laser_layer3_roof_collar_2d();
 
     // Column 2: Riser & Pot Seal Rings (stacks above Layer 3 to reach and seal against 23mm steel cup!)
-    // 1x 32mm basket collar ring
+    // 1x 34mm basket collar ring (Layer 4)
     translate([col2_x, 0])
         helmholtz_laser_ring_32mm_2d();
-    // 2x 23.5mm magnet pot seal rings
+    // 3x 23.5mm magnet pot seal rings (Layers 5, 6, 7 -> matches total 21mm speaker height!)
     translate([col2_x, step_y])
         helmholtz_laser_layer4_pot_seal_2d();
     translate([col2_x, 2 * step_y])
+        helmholtz_laser_layer4_pot_seal_2d();
+    translate([col2_x, 3 * step_y])
         helmholtz_laser_layer4_pot_seal_2d();
 }
 
@@ -1228,6 +1233,11 @@ module assembly(explode = 0.0) {
                 translate([Ts + spk_box_x, spk_box_y, 6 * T - explode * 0.25])
                     linear_extrude(T)
                         helmholtz_laser_layer4_pot_seal_2d();
+            // Layer 7: Magnet Pot Seal Collar 3 (Z = 18..21mm, ID = 23.5mm reaches top of 21mm speaker)
+            color("#120000", 0.94)
+                translate([Ts + spk_box_x, spk_box_y, 7 * T - explode * 0.15])
+                    linear_extrude(T)
+                        helmholtz_laser_layer4_pot_seal_2d();
         } else if (resonator_type == "retainer_ring") {
             color("#5c4a3e", 0.85)
                 translate([Ts + spk_box_x, spk_box_y, T - explode * 0.6])
@@ -1366,12 +1376,94 @@ module layout() {
 }
 
 // ==============================================================================
+// Dedicated 3D View of the Speaker & Stacked Helmholtz Resonator Duct
+// ==============================================================================
+module speaker_helmholtz_3d_view(explode = 0.0) {
+    // 1. Bottom Panel with speaker grille & port exit
+    color("#302b28", 0.70)
+        translate([Ts, 0, -T - explode * 0.5])
+            linear_extrude(T)
+                bottom_panel();
+
+    // 2. Stacked Helmholtz Laser Cut Wood Layers (each layer distinct color)
+    translate([Ts + spk_box_x, spk_box_y, 0]) {
+        // Layer 1: Spacer Ledge (Z=0..3mm, ID=36.8mm, clears moving membrane)
+        color("#a1887f", 0.95)
+            translate([0, 0, 0 + explode * 0.3])
+                linear_extrude(T)
+                    helmholtz_laser_layer1_spacer_2d();
+
+        // Layer 2: Centering Pocket Wall (Z=3..6mm, ID=40.5mm, captures outer rim + wire slot)
+        color("#8d6e63", 0.95)
+            translate([0, 0, T + explode * 0.6])
+                linear_extrude(T)
+                    helmholtz_laser_layer2_centering_2d();
+
+        // Layer 3: Solid Tunnel Roof Plate + Basket Clearance (Z=6..9mm, ID=40.5mm caps 6mm tunnel)
+        color("#795548", 0.95)
+            translate([0, 0, 2 * T + explode * 0.9])
+                linear_extrude(T)
+                    helmholtz_laser_layer3_roof_collar_2d();
+
+        // Layer 4: Basket Riser Ring (Z=9..12mm, ID=34.0mm clears tapering stamped basket)
+        color("#6d4c41", 0.95)
+            translate([0, 0, 3 * T + explode * 1.2])
+                linear_extrude(T)
+                    helmholtz_laser_ring_32mm_2d();
+
+        // Layer 5: Magnet Pot Seal Ring 1 (Z=12..15mm, ID=23.5mm fits snugly over steel cup)
+        color("#5d4037", 0.95)
+            translate([0, 0, 4 * T + explode * 1.5])
+                linear_extrude(T)
+                    helmholtz_laser_layer4_pot_seal_2d();
+
+        // Layer 6: Magnet Pot Seal Ring 2 (Z=15..18mm, ID=23.5mm seals airtight around steel cup)
+        color("#4e342e", 0.95)
+            translate([0, 0, 5 * T + explode * 1.8])
+                linear_extrude(T)
+                    helmholtz_laser_layer4_pot_seal_2d();
+
+        // Layer 7: Magnet Pot Seal Ring 3 (Z=18..21mm, ID=23.5mm reaches top of 21mm speaker!)
+        color("#3e2723", 0.95)
+            translate([0, 0, 6 * T + explode * 2.1])
+                linear_extrude(T)
+                    helmholtz_laser_layer4_pot_seal_2d();
+
+        // 3. Realistic 3D Speaker Seated Face-Down in the Stack
+        // Sits on Layer 1 spacer shelf at Z = T
+        translate([0, 0, T + explode * 0.45]) {
+            if (speaker_type == "aliexpress_40mm") {
+                fm1_aliexpress_40mm_speaker_3d(
+                    outer_dia = eff_spk_dia,
+                    total_h   = eff_spk_h,
+                    cup_dia   = eff_mag_dia,
+                    cup_h     = eff_mag_h,
+                    face_down = true
+                );
+            } else {
+                fm1_big_speaker_3d(
+                    outer_dia  = eff_spk_dia,
+                    total_h    = eff_spk_h,
+                    magnet_dia = eff_mag_dia,
+                    magnet_h   = eff_mag_h,
+                    face_down  = true
+                );
+            }
+        }
+    }
+}
+
+// ==============================================================================
 // Main Render Controller
 // ==============================================================================
 if (part_to_show == "assembly") {
     assembly(explode = 0.0);
 } else if (part_to_show == "exploded") {
     assembly(explode = explode_distance);
+} else if (part_to_show == "helmholtz_3d") {
+    speaker_helmholtz_3d_view(explode = 0.0);
+} else if (part_to_show == "helmholtz_3d_exploded") {
+    speaker_helmholtz_3d_view(explode = max(8.0, explode_distance));
 } else if (part_to_show == "layout") {
     layout();
 } else if (part_to_show == "top") {
