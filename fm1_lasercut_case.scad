@@ -585,35 +585,43 @@ module helmholtz_port_exit_2d() {
 //   A bead of silicone / gasket tape around the 23mm cup creates a 100% airtight seal!
 
 // M3 Screw Ears Configuration:
-// Angled towards the backside (+Y) so they never overhang the front of the case!
+// Positioned at the rear of the tube (opposite the tube outlet, along -X)
+// so they stay completely inside the case with generous clearance (>15mm) from all walls and notches.
 m3_hole_d      = 3.2;   // 3.2mm clearance hole for standard M3 machine screws
 ear_screw_dist = 29.0;  // Radial distance from speaker center to M3 screw hole
 ear_tab_r      = 4.8;   // Outer radius of ear tab around screw hole
-ear_angle_1    = 55.0;  // Back-right ear angle (degrees, towards backside +Y)
-ear_angle_2    = 125.0; // Back-left ear angle (degrees, towards backside +Y)
+
+// Ear layout on the speaker pot:
+// "dual_rear"   : 2 ears angled at 145° and 215° behind the speaker (3-point clamp, wire exits freely at 180° between them)
+// "single_rear" : 1 ear directly opposite the outlet at 180° [-29, 0] (2-point inline clamp along tube axis)
+helmholtz_ears_mode = "dual_rear"; // ["dual_rear", "single_rear"]
+
+ear_angle_1 = 145.0; // Rear-top ear angle (degrees, towards -X, +Y)
+ear_angle_2 = 215.0; // Rear-bottom ear angle (degrees, towards -X, -Y)
 
 ear1_pos = [ear_screw_dist * cos(ear_angle_1), ear_screw_dist * sin(ear_angle_1)];
 ear2_pos = [ear_screw_dist * cos(ear_angle_2), ear_screw_dist * sin(ear_angle_2)];
+ear_single_pos = [-ear_screw_dist, 0];
+
+function helmholtz_pot_ear_positions() =
+    (helmholtz_ears_mode == "single_rear") ? [ear_single_pos] : [ear1_pos, ear2_pos];
 
 module helmholtz_ring_ears_outer_2d() {
     if (helmholtz_screw_ears) {
-        // Back-Right Ear (+X, +Y towards backside)
-        hull() {
-            translate(ear1_pos) circle(r = ear_tab_r);
-            circle(d = eff_spk_dia + 10.0);
-        }
-        // Back-Left Ear (-X, +Y towards backside)
-        hull() {
-            translate(ear2_pos) circle(r = ear_tab_r);
-            circle(d = eff_spk_dia + 10.0);
+        for (pos = helmholtz_pot_ear_positions()) {
+            hull() {
+                translate(pos) circle(r = ear_tab_r);
+                circle(d = eff_spk_dia + 10.0);
+            }
         }
     }
 }
 
 module helmholtz_ring_ear_holes_2d() {
     if (helmholtz_screw_ears) {
-        translate(ear1_pos) circle(d = m3_hole_d);
-        translate(ear2_pos) circle(d = m3_hole_d);
+        for (pos = helmholtz_pot_ear_positions()) {
+            translate(pos) circle(d = m3_hole_d);
+        }
     }
 }
 
@@ -771,11 +779,11 @@ module helmholtz_laser_layer4_pot_seal_2d() {
 
 module helmholtz_laser_parts_2d() {
     wall_w     = 5.0;
-    max_ear_y  = helmholtz_screw_ears ? (ear1_pos[1] + ear_tab_r) : (eff_spk_dia/2 + 5.0);
-    outer_h_y  = eff_spk_dia/2 + 5.0 + max_ear_y + 4.0;
+    max_ear_y  = helmholtz_screw_ears ? max(eff_spk_dia/2 + 5.0, (ear1_pos[1] + ear_tab_r)) : (eff_spk_dia/2 + 5.0);
+    outer_h_y  = 2 * max_ear_y;
     step_y     = outer_h_y + 4.0;
     od_spk     = eff_spk_dia + 10.0;
-    col2_x     = od_spk + helmholtz_port_length + 28.0;
+    col2_x     = od_spk + helmholtz_port_length + 42.0;
 
     // Column 1: The 3 Tunnel Layers (L1: Spacer, L2: Centering + Wire Slot, L3: Tunnel Roof)
     translate([0, 0])
@@ -1562,8 +1570,8 @@ module speaker_helmholtz_3d_view(explode = 0.0) {
             wall_w     = 5.0;
             port_x_end = eff_spk_dia / 2 + helmholtz_port_length + slot_len_x;
             color("#cfd8dc") {
-                // 2 Long M3 Screws clamping all 7 layers of the circular pot (Z = -T to 7*T)
-                for (pt = [ear1_pos, ear2_pos]) {
+                // Long M3 Screws clamping all 7 layers of the circular pot (Z = -T to 7*T)
+                for (pt = helmholtz_pot_ear_positions()) {
                     translate([pt[0], pt[1], -T - 3.0]) {
                         // M3 bolt shank
                         cylinder(d = 2.9, h = 8 * T + 7.0);
