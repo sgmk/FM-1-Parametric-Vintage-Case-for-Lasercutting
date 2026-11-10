@@ -51,8 +51,8 @@ power_switch_mode = "laser_slider"; // [laser_slider:Captive Laser-Cut Slide Swi
 // Speaker driver model inside the enclosure
 speaker_type = "aliexpress_40mm"; // [aliexpress_40mm:AliExpress 40mm 4Ohm 5W Shielded Speaker (40x22mm), upgrade_50mm:Upgraded 50mm Full-Range Speaker (50x31mm), stock_26mm:Stock 26.5mm Capsule (26.5x4.2mm), custom:Custom Dimensions (set in Custom tab), none:No Speaker / No Grille]
 
-// Acoustic mounting & clamp architecture inside the case (see docs/PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md)
-resonator_type = "spider_clamp_3d"; // [spider_clamp_3d:3D-Printed 3-Pillar Spider Clamp Bridge (Recommended, 0.38L Aperiodic), stepped_clamp_laser:Laser-Cut 2-Layer Stepped Rim Clamp (100% Wood, 0.38L Aperiodic), helmholtz_3d_pod:3D-Printed Wide-Body Sealed Helmholtz Tub (0.15L Bass-Reflex), none:None (Open Inside Case)]
+// Acoustic resonator or speaker mount inside the enclosure
+resonator_type = "helmholtz_laser_duct"; // [helmholtz_laser_duct:Laser-Cut Stacked Wood Helmholtz Resonator (Bass-Reflex), helmholtz_3d_pod:3D-Printed Sealed Helmholtz Resonator Pod (Bass-Reflex), stepped_clamp_laser:Laser-Cut 2-Layer Stepped Wood Clamp (Open Case), spider_clamp_3d:3D-Printed 3-Pillar Spider Clamp Bridge (Open Case), retainer_ring:Laser-Cut Single Retainer Ring (Centering Only), none:None (Open Inside Case)]
 
 // Bottom panel speaker cutout style
 speaker_grille_style = "fm1_pinwheel"; // [fm1_pinwheel:Original FM-1 Curved Pinwheel Grille, perforated:Perforated Acoustic Grille Dots, open_hole:Open Round Cutout (for recessed speaker), none:Solid Bottom (No Cutout)]
@@ -79,7 +79,7 @@ speaker_magnet_dia = 45.0; // [15.0:0.5:60.0]
 // Height of rear magnet / cup in mm
 speaker_magnet_height = 8.0; // [2.0:0.2:25.0]
 
-/* [Helmholtz Port Tuning (when using helmholtz_3d_pod)] */
+/* [Helmholtz Port Tuning (when using Helmholtz Resonators)] */
 // Internal width of the Helmholtz bass-reflex slot tunnel in mm
 helmholtz_port_w = 25.0; // [12.0:1.0:40.0]
 
@@ -120,7 +120,7 @@ kerf = 0.08; // [0.0:0.01:0.4]
 
 /* [Display Mode] */
 // What to render
-part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), acoustic_mount:Acoustic Mount / Clamp for Selected Resonator Type (2D/3D), spider_clamp:3D Spider Clamp Bridge (3D STL), stepped_clamp:Laser-Cut 2-Layer Stepped Rim Clamp (2D), helmholtz_pod:3D-Printed Wide-Body Helmholtz Tub (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
+part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), helmholtz_laser:Laser-Cut Helmholtz Resonator Parts (2D), stepped_clamp:Laser-Cut 2-Layer Stepped Clamp (2D), speaker_ring:Laser-Cut Speaker Retainer Ring (2D), helmholtz_pod:3D-Printed Helmholtz Resonator Tub (3D STL), spider_clamp:3D-Printed Spider Clamp Bridge (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
 
 // Show the 3D FM-1 PCB, silicone pads, encoders, screen & battery inside the case
 show_internals = true;
@@ -1292,18 +1292,16 @@ if (part_to_show == "assembly") {
     } else {
         speaker_retainer_ring_2d();
     }
-} else if (part_to_show == "speaker_ring" || part_to_show == "stepped_clamp") {
-    if (resonator_type == "stepped_clamp_laser" || part_to_show == "stepped_clamp") {
-        stepped_clamp_laser_layers_2d();
-    } else {
-        speaker_retainer_ring_2d();
-    }
-} else if (part_to_show == "spider_clamp") {
-    speaker_spider_clamp_3d();
 } else if (part_to_show == "helmholtz_laser") {
     helmholtz_laser_parts_2d();
+} else if (part_to_show == "stepped_clamp") {
+    stepped_clamp_laser_layers_2d();
+} else if (part_to_show == "speaker_ring") {
+    speaker_retainer_ring_2d();
 } else if (part_to_show == "helmholtz_pod") {
     helmholtz_3d_pod_model();
+} else if (part_to_show == "spider_clamp") {
+    speaker_spider_clamp_3d();
 } else if (part_to_show == "speaker") {
     if (speaker_type == "aliexpress_40mm") {
         fm1_aliexpress_40mm_speaker_3d(

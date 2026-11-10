@@ -24,7 +24,7 @@
             "power_switch_mode": "laser_slider",
             "rear_pcb_clearance": "0.2",
             "rear_port_style": "plug_barrels",
-            "resonator_type": "spider_clamp_3d",
+            "resonator_type": "helmholtz_laser_duct",
             "show_internals": "true",
             "speaker_dia": "50",
             "speaker_grille_style": "fm1_pinwheel",
