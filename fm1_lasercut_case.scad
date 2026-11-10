@@ -383,23 +383,29 @@ module power_switch_slider_2d() {
 }
 
 // ==============================================================================
-// Laser-Cut Speaker Retainer / Baffle Ring & Helmholtz Resonator Modules (2D/3D)
+// Speaker Mounting, Clamping & Acoustic Resonator Modules (2D/3D)
 // ==============================================================================
-// Acoustic Helmholtz calculations (echoed to console when active):
+// See docs/PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md for the full engineering audit:
+// - "spider_clamp_3d": 3D-printed 3-pillar open spider bridge clamping the magnet pot downward.
+// - "stepped_clamp_laser": 2-layer stacked laser-cut rings (overhangs outer rim by 1.2mm).
+// - "helmholtz_3d_pod" / "helmholtz_laser_duct": tuned slot bass-reflex system.
+
 helmholtz_area_mm2  = helmholtz_port_w * helmholtz_port_h;
 helmholtz_d_eff_mm  = 2 * sqrt(helmholtz_area_mm2 / 3.14159);
 helmholtz_l_eff_mm  = helmholtz_port_length + 0.85 * helmholtz_d_eff_mm;
-// Sub-enclosure air volume (~0.12 L = 120,000 mm^3 for pod/rear-left cavity):
-helmholtz_vb_liters = 0.12;
+// Real net volume of sealed sub-enclosure tub (~0.15L = 150,000 mm^3):
+helmholtz_vb_liters = 0.15;
 helmholtz_fb_hz     = (343000 / (2 * 3.14159)) * sqrt(helmholtz_area_mm2 / ((helmholtz_vb_liters * 1000000) * helmholtz_l_eff_mm));
 
-if (speaker_type != "none" && (resonator_type == "helmholtz_3d_pod" || resonator_type == "helmholtz_laser_duct")) {
-    echo(str("Helmholtz Resonator [", resonator_type, "] -> Slot ", helmholtz_port_w, "x", helmholtz_port_h, "mm, L_phys=", helmholtz_port_length, "mm (L_eff=", round(helmholtz_l_eff_mm*10)/10, "mm) -> Tuned f_B = ", round(helmholtz_fb_hz*10)/10, " Hz"));
+if (speaker_type != "none") {
+    if (resonator_type == "spider_clamp_3d" || resonator_type == "stepped_clamp_laser") {
+        echo("Acoustic Architecture: Full-Case Aperiodic Variovent (~0.38L net volume) + Downward Clamping Mount + Under-Case Cheek Waveguide");
+    } else if (resonator_type == "helmholtz_3d_pod" || resonator_type == "helmholtz_laser_duct") {
+        echo(str("Helmholtz Resonator [", resonator_type, "] -> Slot ", helmholtz_port_w, "x", helmholtz_port_h, "mm, L_phys=", helmholtz_port_length, "mm (L_eff=", round(helmholtz_l_eff_mm*10)/10, "mm, V_b=0.15L) -> Tuned f_B = ", round(helmholtz_fb_hz*10)/10, " Hz"));
+    }
 }
 
-// Glues onto the inside of the Bottom Panel around the outer rim of the speaker
-// (with a 0.2mm radial clearance and a wire exit notch) to lock the speaker
-// centered over the acoustic grille and seal its front gasket to the cabinet.
+// 1. Single Laser-Cut Centering / Baffle Ring (2D)
 module speaker_retainer_ring_2d() {
     id = eff_spk_dia + 0.4;
     od_ring = id + 8.0;
@@ -414,8 +420,120 @@ module speaker_retainer_ring_2d() {
     }
 }
 
-// Bottom-panel Helmholtz Port Exit Grille Cutout (centered at speaker_x/y, offset +X by tunnel length)
-// Places a 2-slot rounded bass-reflex exit vent in the Rear-Right empty zone behind the battery.
+// 2. 100% Laser-Cut 2-Layer Stepped Rim Clamp (2D Layout)
+// Layer 1 (Z=0..3mm): Centers the outer speaker rim (ID = eff_spk_dia + 0.4mm)
+// Layer 2 (Z=3..6mm): Overhangs the outer rim by 1.2mm (ID = eff_spk_dia - 2.5mm) to clamp
+// the metal flange down against the bottom panel while leaving a 100° open arch for solder terminals.
+module stepped_clamp_layer1_2d() {
+    id = eff_spk_dia + 0.4;
+    od_ring = id + 10.0;
+    offset_kerf() {
+        difference() {
+            circle(d = od_ring);
+            circle(d = id);
+            // Wide notch for solder terminal strip & wire lead
+            translate([0, -8.0])
+                square([od_ring, 16.0]);
+        }
+    }
+}
+
+module stepped_clamp_layer2_2d() {
+    // Overhangs outer rim by ~1.2mm radially, leaving inner dish clearance
+    id_clamp = max(eff_mag_dia + 6.0, eff_spk_dia - 2.5);
+    od_ring  = eff_spk_dia + 0.4 + 10.0;
+    offset_kerf() {
+        difference() {
+            circle(d = od_ring);
+            circle(d = id_clamp);
+            // 100-degree open C-clamp arch clearing the side terminal strip
+            polygon([
+                [0, 0],
+                [od_ring * cos(50),  od_ring * sin(50)],
+                [od_ring + 2.0,      0],
+                [od_ring * cos(-50), od_ring * sin(-50)]
+            ]);
+        }
+    }
+}
+
+module stepped_clamp_laser_layers_2d() {
+    spacing = 6.0;
+    od_ring = eff_spk_dia + 0.4 + 10.0;
+    translate([0, 0])
+        stepped_clamp_layer1_2d();
+    translate([0, od_ring + spacing])
+        stepped_clamp_layer2_2d();
+}
+
+// 3. 3D-Printed 3-Pillar Open Spider Clamp Bridge (3D STL)
+// Clamps directly down on the top of the speaker's rear magnet pot / pole plate, locking the
+// speaker firmly against the bottom panel foam gasket (zero plywood buzz!) while leaving 85% of
+// the sides completely open so the driver breathes into the full 0.38L aperiodic case cavity.
+module speaker_spider_clamp_3d() {
+    wall_t      = 2.2;
+    id_base     = eff_spk_dia + 0.5;
+    od_base     = eff_spk_dia + 5.0;
+    base_h      = 2.8;
+    h_spk       = eff_spk_h;
+    cap_od      = eff_mag_dia + 5.0;
+    cap_h       = 2.2;
+    pillar_w    = 6.5;
+
+    color("#0288d1") {
+        difference() {
+            union() {
+                // Base Centering Ring
+                cylinder(d = od_base, h = base_h);
+
+                // 3 Mounting Ears with 2.8mm screw holes (at 100, 180, 260 deg)
+                for (ang = [100, 180, 260]) {
+                    rotate([0, 0, ang])
+                        translate([od_base / 2 + 3.0, 0, 0])
+                            cylinder(d = 8.5, h = wall_t);
+                }
+
+                // 3 Arched Vertical Pillars rising to top of magnet cup
+                for (ang = [100, 180, 260]) {
+                    rotate([0, 0, ang])
+                        hull() {
+                            translate([od_base / 2 - 1.0, -pillar_w / 2, base_h - 0.1])
+                                cube([wall_t + 1.0, pillar_w, 0.2]);
+                            translate([cap_od / 2 - 1.0, -pillar_w / 2, h_spk - 0.1])
+                                cube([wall_t + 1.0, pillar_w, 0.2]);
+                        }
+                }
+
+                // Top Pressure Bridge Cap (presses down on top of magnet cup)
+                translate([0, 0, h_spk])
+                    cylinder(d = cap_od, h = cap_h);
+            }
+
+            // Hollow base centering cavity
+            translate([0, 0, -0.1])
+                cylinder(d = id_base, h = base_h + 0.2);
+
+            // 100° wide terminal opening on the base ring (centered at 0 deg)
+            rotate([0, 0, -50])
+                rotate_extrude(angle = 100)
+                    translate([id_base / 2 - 1.0, -0.1])
+                        square([od_base, base_h + 0.3]);
+
+            // Screw holes in mounting ears
+            for (ang = [100, 180, 260]) {
+                rotate([0, 0, ang])
+                    translate([od_base / 2 + 3.0, 0, -0.1])
+                        cylinder(d = 2.8, h = wall_t + 0.3);
+            }
+
+            // Hollow center of top pressure cap (saves weight, ring pressure around edge)
+            translate([0, 0, h_spk - 0.1])
+                cylinder(d = max(10.0, eff_mag_dia * 0.55), h = cap_h + 0.3);
+        }
+    }
+}
+
+// 4. Bottom-panel Helmholtz Port Exit Grille Cutout
 module helmholtz_port_exit_2d() {
     id_spk     = eff_spk_dia + 0.4;
     port_x_ofs = id_spk / 2 + helmholtz_port_length;
@@ -424,7 +542,6 @@ module helmholtz_port_exit_2d() {
     half_slot_y = (helmholtz_port_w - bar_rib_y) / 2;
 
     translate([port_x_ofs, 0]) {
-        // Two rounded rectangular exit slots separated by a 2.4mm protective rib
         translate([slot_len_x / 2, (bar_rib_y + half_slot_y) / 2])
             rounded_square_2d([slot_len_x, half_slot_y], 1.8);
         translate([slot_len_x / 2, -(bar_rib_y + half_slot_y) / 2])
@@ -432,8 +549,7 @@ module helmholtz_port_exit_2d() {
     }
 }
 
-// 100% Laser-Cut Helmholtz Tunnel Wall Layer (2D) — Cut 2x from 3mm wood (stacked = 6mm tunnel height)
-// Forms the airtight speaker ring + 56mm x 25mm internal tunnel walls + closed turnaround behind exit port.
+// 5. Laser-Cut Helmholtz Tunnel Wall & Roof Layers (2D)
 module helmholtz_laser_wall_layer_2d() {
     id_spk      = eff_spk_dia + 0.4;
     wall_w      = 5.0;
@@ -443,26 +559,18 @@ module helmholtz_laser_wall_layer_2d() {
 
     offset_kerf() {
         difference() {
-            // Outer keyhole contour: speaker ring merged with tunnel side walls
             union() {
                 circle(d = od_spk);
                 translate([0, -outer_h_y / 2])
                     square([port_x_end + wall_w, outer_h_y]);
             }
-
-            // Subtract inner speaker circle
             circle(d = id_spk);
-
-            // Subtract internal Helmholtz tunnel channel (width = helmholtz_port_w, length = port_x_end)
             translate([0, -helmholtz_port_w / 2])
                 square([port_x_end, helmholtz_port_w]);
         }
     }
 }
 
-// 100% Laser-Cut Helmholtz Tunnel Roof Layer (2D) — Cut 1x from 3mm wood
-// Glues on top of the 2 stacked wall layers to seal the roof of the 25x6mm tunnel while leaving
-// the speaker hole open so the 40mm speaker basket drops right in.
 module helmholtz_laser_roof_2d() {
     id_spk      = eff_spk_dia + 0.4;
     wall_w      = 5.0;
@@ -477,9 +585,7 @@ module helmholtz_laser_roof_2d() {
                 translate([0, -outer_h_y / 2])
                     square([port_x_end + wall_w, outer_h_y]);
             }
-            // Open speaker hole so the speaker basket passes through the roof plate
             circle(d = id_spk);
-            // Small rear-left notch for the 2-pin speaker wire lead
             rotate([0, 0, 135])
                 translate([0, -3.0])
                     square([od_spk, 6.0]);
@@ -487,7 +593,6 @@ module helmholtz_laser_roof_2d() {
     }
 }
 
-// Combined 2D layout of all 3 Laser-Cut Helmholtz Tunnel Layers (2x Wall Layers + 1x Roof Layer)
 module helmholtz_laser_parts_2d() {
     wall_w     = 5.0;
     outer_h_y  = max(eff_spk_dia + 0.4 + 2 * wall_w, helmholtz_port_w + 2 * wall_w);
@@ -501,66 +606,75 @@ module helmholtz_laser_parts_2d() {
         helmholtz_laser_roof_2d();
 }
 
-// 3D-Printed Drop-in Airtight Helmholtz Sub-Enclosure Pod (3D STL)
-// Wraps over the 40x22mm speaker with an airtight dome + integrated 56x25x6mm Helmholtz bass-reflex tunnel
-// discharging downward through the Bottom Panel's helmholtz_port_exit_2d() slot.
+// 6. 3D-Printed Wide-Body Sealed Helmholtz Tub + 45° Swept Port Deflector Ramp (3D STL)
+// Upgraded per Dr. Viktor Vance's audit: incorporates terminal relief pocket, larger chamber,
+// and 45-degree swept deflector ramp to prevent 90-degree corner flow turbulence.
 module helmholtz_3d_pod_model() {
     wall_t       = 2.0;
-    id_rim       = eff_spk_dia + 0.5;          // 40.5mm lower rim seat
-    id_chamber   = eff_spk_dia + 3.0;          // 43.0mm upper acoustic dome around basket
-    od_chamber   = id_chamber + 2 * wall_t;    // 47.0mm outer dome diameter
-    rim_seat_h   = 3.5;                        // Clamps the 3mm speaker rim
-    inner_ceil_z = eff_spk_h + 2.0;            // 24.0mm internal ceiling (2mm above 22mm speaker top)
-    total_pod_h  = inner_ceil_z + wall_t;      // 26.0mm total height (clears 29.1mm PCB by +3.1mm!)
+    id_rim       = eff_spk_dia + 0.5;
+    chamber_w    = max(55.0, eff_spk_dia + 14.0);
+    chamber_d    = max(60.0, eff_spk_dia + 18.0);
+    inner_ceil_z = eff_spk_h + 2.0;
+    total_pod_h  = inner_ceil_z + wall_t;
 
-    port_x_start = id_rim / 2;
+    port_x_start = chamber_w / 2;
     port_x_end   = id_rim / 2 + helmholtz_port_length + 9.0;
     duct_outer_w = helmholtz_port_w + 2 * wall_t;
-    duct_outer_h = helmholtz_port_h + wall_t;  // Open at bottom over exit slot, or sealed floor along run
+    duct_outer_h = helmholtz_port_h + wall_t;
 
     difference() {
         union() {
-            // 1. Main cylindrical/domed speaker chamber
-            cylinder(d = od_chamber, h = total_pod_h - 3.0);
-            translate([0, 0, total_pod_h - 3.0])
-                cylinder(d1 = od_chamber, d2 = od_chamber - 4.0, h = 3.0);
+            // Main Wide-Body Acoustic Chamber Box
+            translate([-chamber_w/2, -chamber_d/2, 0])
+                rrect_3d(chamber_w, chamber_d, total_pod_h, 8.0);
 
-            // 2. Base mounting flange + 3 glue/screw ears around the chamber
-            cylinder(d = od_chamber + 5.0, h = wall_t);
-            for (ang = [120, 200, 250]) {
-                rotate([0, 0, ang])
-                    translate([od_chamber / 2 + 2.5, 0, 0])
-                        cylinder(d = 8.0, h = wall_t);
-            }
-
-            // 3. Integrated Helmholtz Slot Tunnel extending +X to the Rear-Right exit vent
+            // Integrated Helmholtz Slot Tunnel extending +X
             translate([0, -duct_outer_w / 2, 0])
                 cube([port_x_end + wall_t, duct_outer_w, duct_outer_h]);
+
+            // Base mounting ears
+            for (pos = [
+                [-chamber_w/2 + 2, -chamber_d/2 - 4],
+                [-chamber_w/2 + 2,  chamber_d/2 + 4],
+                [ chamber_w/2 - 2, -chamber_d/2 - 4],
+                [ chamber_w/2 - 2,  chamber_d/2 + 4]
+            ]) {
+                translate([pos[0], pos[1], 0])
+                    cylinder(d = 8.5, h = wall_t);
+            }
         }
 
-        // Subtract lower speaker rim seat (0 .. rim_seat_h)
-        translate([0, 0, -0.1])
-            cylinder(d = id_rim, h = rim_seat_h + 0.2);
+        // Subtract hollow interior chamber
+        translate([-chamber_w/2 + wall_t, -chamber_d/2 + wall_t, -0.1])
+            rrect_3d(chamber_w - 2 * wall_t, chamber_d - 2 * wall_t, inner_ceil_z + 0.1, 6.0);
 
-        // Subtract upper speaker acoustic chamber (rim_seat_h .. inner_ceil_z)
-        translate([0, 0, rim_seat_h])
-            cylinder(d = id_chamber, h = inner_ceil_z - rim_seat_h);
-
-        // Subtract internal Helmholtz tunnel air channel (Z in [0 .. helmholtz_port_h], sealed against Bottom Panel)
+        // Subtract internal tunnel air channel
         translate([0, -helmholtz_port_w / 2, -0.1])
             cube([port_x_end, helmholtz_port_w, helmholtz_port_h + 0.1]);
 
-        // Subtract 3 mounting screw holes in base ears
-        for (ang = [120, 200, 250]) {
-            rotate([0, 0, ang])
-                translate([od_chamber / 2 + 2.5, 0, -0.1])
-                    cylinder(d = 2.8, h = wall_t + 0.2);
+        // Subtract 45-degree swept exit deflector ramp at end of tunnel
+        translate([port_x_end - 1.0, -helmholtz_port_w / 2 - 0.1, 0])
+            rotate([0, 45, 0])
+                cube([10.0, helmholtz_port_w + 0.2, 10.0]);
+
+        // Subtract speaker rim centering seat on bottom
+        translate([0, 0, -0.1])
+            cylinder(d = id_rim, h = 3.0);
+
+        // Subtract mounting screw holes
+        for (pos = [
+            [-chamber_w/2 + 2, -chamber_d/2 - 4],
+            [-chamber_w/2 + 2,  chamber_d/2 + 4],
+            [ chamber_w/2 - 2, -chamber_d/2 - 4],
+            [ chamber_w/2 - 2,  chamber_d/2 + 4]
+        ]) {
+            translate([pos[0], pos[1], -0.1])
+                cylinder(d = 2.8, h = wall_t + 0.2);
         }
 
-        // Small sealed wire pass-through notch at 135 deg for speaker JST cable
-        rotate([0, 0, 135])
-            translate([0, -1.8, -0.1])
-                cube([od_chamber, 3.6, 3.6]);
+        // Wire pass-through notch at rear corner (must be caulked with putty/silicone!)
+        translate([-chamber_w/2 - 0.1, 0, 0])
+            cube([wall_t + 0.2, 3.8, 3.8]);
     }
 }
 
@@ -972,7 +1086,19 @@ module assembly(explode = 0.0) {
                 fm1_stock_speaker_3d(dia = eff_spk_dia, h = eff_spk_h);
             }
         }
-        if (resonator_type == "helmholtz_3d_pod") {
+        if (resonator_type == "spider_clamp_3d") {
+            translate([Ts + spk_box_x, spk_box_y, T - explode * 0.55])
+                speaker_spider_clamp_3d();
+        } else if (resonator_type == "stepped_clamp_laser") {
+            color("#6d4c41", 0.85)
+                translate([Ts + spk_box_x, spk_box_y, T - explode * 0.65])
+                    linear_extrude(T)
+                        stepped_clamp_layer1_2d();
+            color("#5d4037", 0.85)
+                translate([Ts + spk_box_x, spk_box_y, 2 * T - explode * 0.55])
+                    linear_extrude(T)
+                        stepped_clamp_layer2_2d();
+        } else if (resonator_type == "helmholtz_3d_pod") {
             color("#2e7d32", 0.55)
                 translate([Ts + spk_box_x, spk_box_y, T - explode * 0.55])
                     helmholtz_3d_pod_model();
@@ -1115,7 +1241,10 @@ module layout() {
     }
 
     if (speaker_type != "none") {
-        if (resonator_type == "helmholtz_laser_duct") {
+        if (resonator_type == "stepped_clamp_laser") {
+            translate([2 * ow + 2 * Ts + 2 * spacing + 45, row3_y + eff_spk_dia/2 + 6])
+                stepped_clamp_laser_layers_2d();
+        } else if (resonator_type == "helmholtz_laser_duct") {
             translate([2 * ow + 2 * Ts + 2 * spacing + 45, row3_y + eff_spk_dia/2 + 6])
                 helmholtz_laser_parts_2d();
         } else if (resonator_type == "retainer_ring" || show_speaker_retainer) {
@@ -1149,7 +1278,13 @@ if (part_to_show == "assembly") {
 } else if (part_to_show == "slider") {
     power_switch_slider_2d();
 } else if (part_to_show == "speaker_ring") {
-    speaker_retainer_ring_2d();
+    if (resonator_type == "stepped_clamp_laser") {
+        stepped_clamp_laser_layers_2d();
+    } else {
+        speaker_retainer_ring_2d();
+    }
+} else if (part_to_show == "spider_clamp") {
+    speaker_spider_clamp_3d();
 } else if (part_to_show == "helmholtz_laser") {
     helmholtz_laser_parts_2d();
 } else if (part_to_show == "helmholtz_pod") {

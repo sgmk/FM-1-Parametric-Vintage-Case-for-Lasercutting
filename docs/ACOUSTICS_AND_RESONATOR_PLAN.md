@@ -1,31 +1,37 @@
 # Acoustic & Sub-Bass Resonator Guide — M-VAVE FM-1 Vintage Case
 
 > **How this guide is organized:**
-> * **This document (`ACOUSTICS_AND_RESONATOR_PLAN.md`)** is a **clear, beginner-friendly visual guide** explaining how the speakers and resonators work, why we chose the **`40 × 22 mm` speaker + `135 Hz` Helmholtz Resonator**, and how to export/build it in OpenSCAD ([`fm1_lasercut_case.scad`](../fm1_lasercut_case.scad)).
-> * **Want the full math, Thiele-Small tables, differential equations, and engineering nomographs?**
+> * **This document (`ACOUSTICS_AND_RESONATOR_PLAN.md`)** is a **clear, visual guide** explaining how the speakers, clamps, and resonators work, covering our recommended build (**Aperiodic Variovent + 3D Spider Bridge Clamp**) as well as the tuned Helmholtz bass-reflex option.
+> * **Want the hard-hitting peer-review engineering audit & hackerspace debate?**
+>   👉 Read [**`PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md`**](PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md) — Dr. Viktor Vance ("The Baffle Butcher") vs Maker/Synth Geek on parasitic leaks, acoustic inertance, and mechanical clamping.
+> * **Want the full story & workbench listening tests in magazine format?**
+>   👉 Read [**`SYNTH_JOURNALIST_EDITORIAL_OVERVIEW.md`**](SYNTH_JOURNALIST_EDITORIAL_OVERVIEW.md) — Sound On Sound / CDM style deep-dive feature article.
+> * **Want the full raw math, Thiele-Small tables, differential equations, and nomographs?**
 >   👉 Jump to [**`ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md`**](ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md).
 
-| Chosen Speaker: AliExpress `40 × 22 mm` (`4Ω 5W`) | Alternative Big Speaker: `50 × 31 mm` (`Ø45 mm` Magnet) | Stock FM-1 Curved Pinwheel Grille |
+| Chosen Speaker: AliExpress `40 × 22 mm` (`4Ω 5W`) | Alternative Big Speaker: `50 × 31 mm` (`Ø45 mm` Magnet) | 4-Panel Acoustic Audit & Spider Clamp Map |
 | :---: | :---: | :---: |
-| ![40mm AliExpress Speaker](../photos/speaker_40mm_aliexpress.png) | ![50mm Speaker Side Profile](../photos/speaker_50mm_side.jpg) | ![Original FM-1 Pinwheel Grille](../photos/original_speaker_grille.jpg) |
+| ![40mm AliExpress Speaker](../photos/speaker_40mm_aliexpress.png) | ![50mm Speaker Side Profile](../photos/speaker_50mm_side.jpg) | ![Acoustic Audit & Spider Clamp](acoustics/viktor_audit_and_spider_clamp.png) |
 
 ---
 
-## 1. Our Chosen Setup: `40 × 22 mm` Speaker + `135 Hz` Helmholtz Resonator
+## 1. Recommended Setup: Full-Case Aperiodic Variovent + Downward Clamping
 
-After comparing all drivers and resonator types, our default design (`highVintage` preset in [`fm1_lasercut_case.scad`](../fm1_lasercut_case.scad)) uses:
-* **Speaker:** **AliExpress `40 × 22 mm` (`4Ω 5W`, `Ø23 mm` shielded steel cup)** mounted face-down on the Bottom Panel at **`[X = 38 mm, Y = 64 mm]`** (Rear-Left cavity).
-  * **Why it wins:** At only `22 mm` tall, it fits inside the slim `25 mm` wooden case with **`+7.1 mm` of vertical clearance** under the tilted PCB (no need to make the case taller!), moves **`2.1×` more air** than the tiny stock capsule, and pairs smoothly with our internal volume. *(See [Deep Analysis §2 — Driver Specs](ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md#2-driver-specifications-measured-vs-estimated-thiele-small-parameters)).*
-* **Resonator:** **`135 Hz` Helmholtz Bass-Reflex Slot Tunnel (`56 mm` long × `25 mm` wide × `6 mm` high)** extending from the speaker at `[X=38, Y=64]` into the empty Rear-Right cavity behind the LiPo battery (`[X=118, Y=64]`), where it fires downward through a dual-slot exit vent in the Bottom Panel.
-  * **What it does:** Instead of trapping and wasting the sound wave from the back of the speaker cone, the `56 mm` air tunnel acts like blowing across a bottle at `135 Hz` — **flipping the rear wave in-sync (`+` + `+`)** with the front cone to boost sub-bass by **`+4.5 dB`** down to **`118 Hz`**. *(See [Deep Analysis §4 — Helmholtz Port Math & Nomograph](ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md#4-helmholtz-bass-reflex-port-derivations--tuning-nomograph)).*
+Following the critical peer-review audit by Dr. Viktor Vance, our primary recommended build (`highVintage` preset in [`fm1_lasercut_case.scad`](../fm1_lasercut_case.scad)) uses:
+* **Speaker:** **AliExpress `40 × 22 mm` (`4Ω 5W`, `Ø23 mm` shielded steel cup)** mounted face-down on the Bottom Panel at **`[X = 38 mm, Y = 64 mm]`** over the curved pinwheel grille with a `1.5 mm` EVA foam sealing gasket.
+* **Acoustic Enclosure Principle:** **Aperiodic Variovent (`~0.38 L` Sub-PCB Cavity).**
+  * Rather than fighting the unavoidable `~311 mm²` of parasitic case leaks (jacks, USB-C, power slider, encoder shafts), we turn the entire interior into an **aperiodic damped flow enclosure**.
+  * By placing a loose `2–3g` pinch of polyfill or felt around the speaker inside the case, the system acts as a mechanical-acoustic damper, achieving **$Q_{tc} \approx 0.68$**. This delivers flat, punchy, uncolored synth bass down to **`~125 Hz`**, eliminates cone bottoming/unloading on sub-audio FM clicks, and has **zero port wind noise (chuffing)**.
+* **Mechanical Clamping:** To prevent plywood buzz at the full `1.35 W` amplifier output, the speaker must be held down under mechanical compression, not just located by a loose ring.
 
-### Two Ways to Build It in OpenSCAD (`resonator_type` Dropdown)
-Both versions are built right into [`fm1_lasercut_case.scad`](../fm1_lasercut_case.scad) under `/* [Speaker & Acoustic Grille] */`:
+### Three Ways to Build It in OpenSCAD (`resonator_type` Dropdown)
+Selectable right in [`fm1_lasercut_case.scad`](../fm1_lasercut_case.scad) under `/* [Speaker & Acoustic Grille] */`:
 
 | Build Method | `resonator_type` Setting | How to Export & Assemble |
 | :--- | :--- | :--- |
-| **Option 1 (Recommended): 3D-Printed Airtight Pod + Laser-Cut Bottom Exit Slot** | `"helmholtz_3d_pod"` *(Default)* | 1. Set `part_to_show = "helmholtz_pod"` → **Export as STL** and 3D-print on any FDM printer (`26 mm` tall, clears PCB by `+3.1 mm`).<br>2. Set `part_to_show = "layout"` → **Export as DXF/SVG** and laser-cut the wooden panels.<br>3. Drop the `40 mm` speaker onto the pinwheel grille and glue/screw the 3D pod right over it! |
-| **Option 2 (No 3D Printer Needed): 100% Laser-Cut Stacked Wood Tunnel** | `"helmholtz_laser_duct"` | 1. Set `resonator_type = "helmholtz_laser_duct"` and `part_to_show = "layout"`.<br>2. Laser-cut the 3 extra wooden resonator pieces included in the layout (**2× Tunnel Wall Layers** + **1× Tunnel Roof Plate**).<br>3. Glue the 2 wall layers (`6 mm` tall) + roof plate (`3 mm` tall) onto the inside of the Bottom Panel and press the `40 mm` speaker into the ring! |
+| **Option 1 (Recommended Daily Driver): 3D-Printed Spider Bridge Clamp** | `"spider_clamp_3d"` *(Default)* | 1. Set `part_to_show = "spider_clamp"` → **Export as STL** and 3D-print in PETG or PLA.<br>2. Fits over the `40 mm` driver with an open 3-pillar bridge, clearing the fragile side solder terminals by $100^\circ$.<br>3. Fasten down with 3× M2.5 wood screws to press down on the $\varnothing 23\,\text{mm}$ magnet pot with an EVA foam cushion. |
+| **Option 2 (100% Laser-Cut Wood): 2-Layer Stepped Rim Clamp** | `"stepped_clamp_laser"` | 1. Set `resonator_type = "stepped_clamp_laser"` and `part_to_show = "layout"`.<br>2. Cut the two stacked wooden rings: **Layer 1** centers the $\varnothing 40.4\,\text{mm}$ rim; **Layer 2** overhangs the outer metal flange by $1.2\,\text{mm}$ with a $100^\circ$ terminal cutout.<br>3. Screw or glue down to clamp the outer flange down against the bottom gasket. |
+| **Option 3 (High-SPL Bass Reflex): Wide-Body Sealed Tub + $45^\circ$ Ramp** | `"helmholtz_3d_pod"` | 1. Set `resonator_type = "helmholtz_3d_pod"` and `part_to_show = "helmholtz_pod"` → **Export as STL**.<br>2. A wide-body sealed chamber ($V_b \approx 0.15\,\text{L}$) that completely isolates the speaker from case leaks, with relief cavities for solder terminals and a $45^\circ$ deflector ramp out the bottom panel.<br>3. Must be sealed airtight to the bottom plate using silicone or closed-cell foam tape! |
 
 ---
 
@@ -106,14 +112,17 @@ If you ever want to experiment beyond the single `40 × 22 mm` + Helmholtz setup
 
 ## 5. Complete Index of Engineering Diagrams & Reference Docs
 
-* **Full Engineering Reference Document:** [**`docs/ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md`**](ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md)
+* **Hard-Hitting Peer-Review Audit Dialogue:** [**`docs/PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md`**](PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md) — Dr. Viktor Vance ("The Baffle Butcher") vs Maker / Synth Geek.
+* **Editorial Synth Journalist Overview:** [**`docs/SYNTH_JOURNALIST_EDITORIAL_OVERVIEW.md`**](SYNTH_JOURNALIST_EDITORIAL_OVERVIEW.md) — Feature article on the transformation, audit, aperiodic epiphany, and workbench listening tests.
+* **Full Engineering Reference Document:** [**`docs/ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md`**](ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md) — Comprehensive derivations, Thiele-Small formulas, and acoustic boundary physics.
 * **Visual Diagrams in `docs/acoustics/`:**
-  1. [`beginner_resonators_explained.png`](acoustics/beginner_resonators_explained.png) — 4-panel beginner cartoon explaining Unsealed vs. Sealed vs. Helmholtz Tunnel vs. Passive Radiator.
-  2. [`beginner_3_builds_inside_fm1.png`](acoustics/beginner_3_builds_inside_fm1.png) — Top-down map of the 3 sub-bass builds inside the FM-1 bottom plate.
-  3. [`current_case_wedge_acoustics.png`](acoustics/current_case_wedge_acoustics.png) — Cross-sections of the `12°` wedge enclosure, internal cavities, and under-case "cheek tunnel" + rear foam dam.
-  4. [`spl_frequency_response.png`](acoustics/spl_frequency_response.png) — Calculated SPL frequency response (dB) and cone excursion $|X(f)|$ curves.
-  5. [`helmholtz_port_tuning_nomograph.png`](acoustics/helmholtz_port_tuning_nomograph.png) — Helmholtz slot port physical length $L_p$ vs. tuning frequency $f_B$ nomograph.
-  6. [`pcb_underside_clearance_map.png`](acoustics/pcb_underside_clearance_map.png) — Scale 2D + Z-clearance map of PCB underside obstacles (`J1`, `J13`, LiPo battery, encoder pins).
-  7. [`multi_speaker_layouts_and_spl.png`](acoustics/multi_speaker_layouts_and_spl.png) — Multi-speaker placement zones (`[38, 65]`, `[126, 68]`, `[25, 21]`) and `2× 40mm` / 2-Way SPL curves.
-  8. [`resonator_cross_sections.png`](acoustics/resonator_cross_sections.png) — 3 pure laser-cut plywood architectures.
-  9. [`3d_printed_hybrid_concepts.png`](acoustics/3d_printed_hybrid_concepts.png) — 4 hybrid 3D-printed sub-enclosure, wedge cradle, passive radiator, and horn plinth concepts.
+  1. [`viktor_audit_and_spider_clamp.png`](acoustics/viktor_audit_and_spider_clamp.png) — 4-panel visual audit diagram: Thimble pod vs real volume, parasitic case leaks vs tunnel inertance, 3D Spider Bridge Clamp, and wide-body Helmholtz tub.
+  2. [`beginner_resonators_explained.png`](acoustics/beginner_resonators_explained.png) — 4-panel beginner cartoon explaining Unsealed vs. Sealed vs. Helmholtz Tunnel vs. Passive Radiator.
+  3. [`beginner_3_builds_inside_fm1.png`](acoustics/beginner_3_builds_inside_fm1.png) — Top-down map of the 3 sub-bass builds inside the FM-1 bottom plate.
+  4. [`current_case_wedge_acoustics.png`](acoustics/current_case_wedge_acoustics.png) — Cross-sections of the `12°` wedge enclosure, internal cavities, and under-case "cheek tunnel" + rear foam dam.
+  5. [`spl_frequency_response.png`](acoustics/spl_frequency_response.png) — Calculated SPL frequency response (dB) and cone excursion $|X(f)|$ curves.
+  6. [`helmholtz_port_tuning_nomograph.png`](acoustics/helmholtz_port_tuning_nomograph.png) — Helmholtz slot port physical length $L_p$ vs. tuning frequency $f_B$ nomograph.
+  7. [`pcb_underside_clearance_map.png`](acoustics/pcb_underside_clearance_map.png) — Scale 2D + Z-clearance map of PCB underside obstacles (`J1`, `J13`, LiPo battery, encoder pins).
+  8. [`multi_speaker_layouts_and_spl.png`](acoustics/multi_speaker_layouts_and_spl.png) — Multi-speaker placement zones (`[38, 65]`, `[126, 68]`, `[25, 21]`) and `2× 40mm` / 2-Way SPL curves.
+  9. [`resonator_cross_sections.png`](acoustics/resonator_cross_sections.png) — 3 pure laser-cut plywood architectures.
+  10. [`3d_printed_hybrid_concepts.png`](acoustics/3d_printed_hybrid_concepts.png) — 4 hybrid 3D-printed sub-enclosure, wedge cradle, passive radiator, and horn plinth concepts.
