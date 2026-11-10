@@ -78,8 +78,8 @@ speaker_mount = "bottom_panel"; // [bottom_panel:Flat on Bottom Panel (Horizonta
 // Speaker orientation (true = cone facing down into bottom panel grille; false = magnet on bottom panel, cone facing up)
 speaker_face_down = true;
 
-// Sub-bass resonator / baffle architecture inside the case
-resonator_type = "helmholtz_3d_pod"; // [helmholtz_3d_pod:3D-Printed Airtight Helmholtz Pod + Slot Port (135 Hz), helmholtz_laser_duct:Laser-Cut Stacked Wood Helmholtz Tunnel (135 Hz), retainer_ring:Laser-Cut Wooden Retainer Ring Only (Sealed Box), none:None (Open Inside Case)]
+// Sub-bass resonator / speaker clamp architecture inside the case (see docs/PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md)
+resonator_type = "spider_clamp_3d"; // [spider_clamp_3d:3D-Printed 3-Pillar Spider Clamp Bridge + 0.38L Aperiodic Box (Recommended), stepped_clamp_laser:Laser-Cut 2-Layer Stepped Rim Clamp + 0.38L Aperiodic Box, helmholtz_3d_pod:3D-Printed Wide-Body Sealed 0.15L Helmholtz Tub + 45deg Swept Port, helmholtz_laser_duct:Laser-Cut Stacked Wood Helmholtz Tunnel, retainer_ring:Laser-Cut Single Retainer Ring Only, none:None (Open Inside Case)]
 
 // Keep legacy retainer ring toggle synchronized when resonator_type == "retainer_ring"
 show_speaker_retainer = true;
@@ -127,7 +127,7 @@ kerf = 0.08; // [0.0:0.01:0.4]
 
 /* [Display Mode] */
 // What to render
-part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), speaker_ring:Speaker Retainer Ring (2D), helmholtz_laser:Laser-Cut Helmholtz Tunnel Layers (2D), helmholtz_pod:3D-Printed Helmholtz Pod Only (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
+part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), speaker_ring:Speaker Retainer / Stepped Clamp Rings (2D), spider_clamp:3D-Printed 3-Pillar Spider Clamp Bridge (3D STL), helmholtz_laser:Laser-Cut Helmholtz Tunnel Layers (2D), helmholtz_pod:3D-Printed Wide-Body Helmholtz Tub (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
 
 // Show the 3D FM-1 PCB, silicone pads, encoders, screen & battery inside the case
 show_internals = true;
