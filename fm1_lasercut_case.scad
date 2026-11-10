@@ -561,13 +561,28 @@ module helmholtz_port_exit_2d() {
     }
 }
 
-// 5. Laser-Cut Helmholtz Tunnel Wall & Roof Layers (2D)
-module helmholtz_laser_wall_layer_2d() {
-    id_spk      = eff_spk_dia + 0.4;
+// 5. Laser-Cut Helmholtz Bass-Reflex Resonator with Integrated Metal-Cup Seal (2D)
+// Calibrated from the physical AliExpress 40mm speaker:
+// Uses the speaker's own solid stamped steel magnet pot as the airtight acoustic ceiling!
+// The side tube / tunnel stays low at 6mm height (Layers 1 & 2), while Layers 3 & 4 step inward
+// to seal airtight around the 23mm metal cup.
+//
+// Layer 1 (Z=0..3mm, on Bottom Panel):
+//   Spacer Ledge (ID = 36.8mm) clears moving membrane with 3mm depth + 25mm slot tunnel channel.
+// Layer 2 (Z=3..6mm):
+//   Centering Pocket (ID = 40.5mm) captures Ø40mm flange + terminal notch (-X) + 25mm slot tunnel.
+// Layer 3 (Z=6..9mm):
+//   Tunnel Roof Plate (caps the 6mm slot tunnel!) + ID = 32.0mm middle basket collar.
+// Layer 4 (Z=9..12mm):
+//   Magnet Pot Seal Collar (ID = 23.5mm) slips snugly over the Ø23.0mm steel cup.
+//   A bead of silicone / gasket tape around the 23mm cup creates a 100% airtight seal!
+
+module helmholtz_laser_layer1_spacer_2d() {
+    id_spacer   = (eff_spk_dia == 40.0) ? 36.8 : (eff_spk_dia - 3.2);
     wall_w      = 5.0;
-    od_spk      = id_spk + 2 * wall_w;
+    od_spk      = eff_spk_dia + 10.0;
     slot_len_x  = 10.0;
-    port_x_end  = id_spk / 2 + helmholtz_port_length + slot_len_x;
+    port_x_end  = eff_spk_dia / 2 + helmholtz_port_length + slot_len_x;
     outer_h_y   = helmholtz_port_w + 2 * wall_w;
 
     offset_kerf() {
@@ -577,20 +592,21 @@ module helmholtz_laser_wall_layer_2d() {
                 translate([0, -outer_h_y / 2])
                     square([port_x_end + wall_w, outer_h_y]);
             }
-            circle(d = id_spk);
+            circle(d = id_spacer);
             translate([0, -helmholtz_port_w / 2])
                 square([port_x_end, helmholtz_port_w]);
         }
     }
 }
 
-module helmholtz_laser_roof_2d() {
-    id_spk      = eff_spk_dia + 0.4;
+module helmholtz_laser_layer2_centering_2d() {
+    id_center   = eff_spk_dia + 0.5; // 40.5mm
     wall_w      = 5.0;
-    od_spk      = id_spk + 2 * wall_w;
+    od_spk      = eff_spk_dia + 10.0;
     slot_len_x  = 10.0;
-    port_x_end  = id_spk / 2 + helmholtz_port_length + slot_len_x;
+    port_x_end  = eff_spk_dia / 2 + helmholtz_port_length + slot_len_x;
     outer_h_y   = helmholtz_port_w + 2 * wall_w;
+    notch_w     = 30.0; // 30mm notch on -X side for 28mm terminal strip
 
     offset_kerf() {
         difference() {
@@ -599,25 +615,63 @@ module helmholtz_laser_roof_2d() {
                 translate([0, -outer_h_y / 2])
                     square([port_x_end + wall_w, outer_h_y]);
             }
-            circle(d = id_spk);
-            rotate([0, 0, 135])
-                translate([0, -3.0])
-                    square([od_spk, 6.0]);
+            circle(d = id_center);
+            translate([0, -helmholtz_port_w / 2])
+                square([port_x_end, helmholtz_port_w]);
+            // Notch on -X side (opposite tunnel) for wires & terminals
+            translate([-od_spk, -notch_w / 2])
+                square([od_spk, notch_w]);
+        }
+    }
+}
+
+module helmholtz_laser_layer3_roof_collar_2d() {
+    id_collar   = (eff_spk_dia == 40.0) ? 32.0 : (eff_mag_dia + 8.0);
+    wall_w      = 5.0;
+    od_spk      = eff_spk_dia + 10.0;
+    slot_len_x  = 10.0;
+    port_x_end  = eff_spk_dia / 2 + helmholtz_port_length + slot_len_x;
+    outer_h_y   = helmholtz_port_w + 2 * wall_w;
+
+    offset_kerf() {
+        difference() {
+            union() {
+                circle(d = od_spk);
+                // Solid wooden roof covering the tunnel channel
+                translate([0, -outer_h_y / 2])
+                    square([port_x_end + wall_w, outer_h_y]);
+            }
+            // Collar opening resting on the middle basket shoulder
+            circle(d = id_collar);
+        }
+    }
+}
+
+module helmholtz_laser_layer4_pot_seal_2d() {
+    id_pot  = eff_mag_dia + 0.5; // 23.5mm (slips snugly over 23.0mm steel cup)
+    od_spk  = eff_spk_dia + 10.0; // 50.0mm
+
+    offset_kerf() {
+        difference() {
+            circle(d = od_spk);
+            circle(d = id_pot);
         }
     }
 }
 
 module helmholtz_laser_parts_2d() {
     wall_w     = 5.0;
-    outer_h_y  = max(eff_spk_dia + 0.4 + 2 * wall_w, helmholtz_port_w + 2 * wall_w);
+    outer_h_y  = max(eff_spk_dia + 10.0, helmholtz_port_w + 2 * wall_w);
     step_y     = outer_h_y + 6.0;
 
     translate([0, 0])
-        helmholtz_laser_wall_layer_2d();
+        helmholtz_laser_layer1_spacer_2d();
     translate([0, step_y])
-        helmholtz_laser_wall_layer_2d();
+        helmholtz_laser_layer2_centering_2d();
     translate([0, 2 * step_y])
-        helmholtz_laser_roof_2d();
+        helmholtz_laser_layer3_roof_collar_2d();
+    translate([0, 3 * step_y])
+        helmholtz_laser_layer4_pot_seal_2d();
 }
 
 // 6. 3D-Printed Wide-Body Sealed Helmholtz Tub + 45° Swept Port Deflector Ramp (3D STL)
@@ -1079,7 +1133,7 @@ module assembly(explode = 0.0) {
                 bottom_panel();
 
     // 1b. Speaker Mounted Flat on Bottom Panel (+ Optional Laser-Cut Retainer Ring)
-    spk_seat_z = (resonator_type == "stepped_clamp_laser") ? (2 * T) : T;
+    spk_seat_z = (resonator_type == "stepped_clamp_laser" || resonator_type == "helmholtz_laser_duct") ? (2 * T) : T;
     if (show_internals && speaker_type != "none" && speaker_mount == "bottom_panel") {
         translate([Ts + spk_box_x, spk_box_y, spk_seat_z + speaker_z_offset - explode * 0.45]) {
             if (speaker_type == "aliexpress_40mm") {
@@ -1119,20 +1173,26 @@ module assembly(explode = 0.0) {
                 translate([Ts + spk_box_x, spk_box_y, T - explode * 0.55])
                     helmholtz_3d_pod_model();
         } else if (resonator_type == "helmholtz_laser_duct") {
-            // Layer 1 & Layer 2: 2x stacked 3mm wooden tunnel wall layers (6mm total height)
+            // Layer 1: Spacer Ledge (Z = 0..3mm, ID = 36.8mm, clears membrane)
             color("#6d4c41", 0.85)
-                translate([Ts + spk_box_x, spk_box_y, T - explode * 0.65])
+                translate([Ts + spk_box_x, spk_box_y, T - explode * 0.75])
                     linear_extrude(T)
-                        helmholtz_laser_wall_layer_2d();
+                        helmholtz_laser_layer1_spacer_2d();
+            // Layer 2: Centering Pocket Wall (Z = 3..6mm, ID = 40.5mm)
             color("#5d4037", 0.85)
-                translate([Ts + spk_box_x, spk_box_y, 2 * T - explode * 0.55])
+                translate([Ts + spk_box_x, spk_box_y, 2 * T - explode * 0.65])
                     linear_extrude(T)
-                        helmholtz_laser_wall_layer_2d();
-            // Layer 3: 1x 3mm wooden roof plate over tunnel
-            color("#4e342e", 0.78)
-                translate([Ts + spk_box_x, spk_box_y, 3 * T - explode * 0.45])
+                        helmholtz_laser_layer2_centering_2d();
+            // Layer 3: Tunnel Roof Plate & Basket Collar (Z = 6..9mm, caps tunnel at 6mm height!)
+            color("#4e342e", 0.85)
+                translate([Ts + spk_box_x, spk_box_y, 3 * T - explode * 0.55])
                     linear_extrude(T)
-                        helmholtz_laser_roof_2d();
+                        helmholtz_laser_layer3_roof_collar_2d();
+            // Layer 4: Magnet Pot Seal Collar (Z = 9..12mm, ID = 23.5mm seals around steel cup)
+            color("#3e2723", 0.88)
+                translate([Ts + spk_box_x, spk_box_y, 4 * T - explode * 0.45])
+                    linear_extrude(T)
+                        helmholtz_laser_layer4_pot_seal_2d();
         } else if (resonator_type == "retainer_ring") {
             color("#5c4a3e", 0.85)
                 translate([Ts + spk_box_x, spk_box_y, T - explode * 0.6])
