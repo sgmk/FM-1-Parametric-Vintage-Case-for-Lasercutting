@@ -629,35 +629,35 @@ module fm1_big_speaker_3d(
 }
 
 // AliExpress 40mm 4Ohm 5W Shielded Speaker 3D Model
-// High-fidelity physical reconstruction matching real hardware photo:
-//   - Outer Rim Flange:   40.0 mm outer diameter with front foam gasket & rubber roll
-//   - Lower Window Tier:  38.0 mm cylindrical basket (Z = 2.2 to 6.5mm) with 4 open acoustic windows
-//   - Horizontal Step 1:  38.0 mm -> 32.0 mm prominent stamped shelf at Z = 6.5mm
-//   - Middle Tier:        32.0 mm cylindrical collar (Z = 7.2 to 11.0mm)
-//   - Horizontal Step 2:  32.0 mm -> 23.0 mm transition at Z = 11.0mm
-//   - Rear Magnet Cup:    23.0 mm diameter x 9.2 mm tall cup with rounded dome top (Z = 11.8 to 21.0mm)
-//   - Terminal Latch:     White phenolic board + 2 silver solder eyelets in the -X window
+// Calibrated from physical caliper measurements:
+//   - Total Height:        21.0 mm (front face to top of magnet dome)
+//   - Magnet Pot:          Ø23.1 mm x 8.5 mm tall with rounded dome top
+//   - Middle Tier:         Ø30.5 mm x 1.9 mm tall step
+//   - Window / Cone Tier:  Ø36.0 mm cage with 4 large open acoustic windows
+//   - Front Rim:           Ø40.0 mm x 2.5 mm thick (gasket + metal flange)
 module fm1_aliexpress_40mm_speaker_3d(
     outer_dia  = 40.0,
     total_h    = 21.0,
-    cup_dia    = 23.0,
-    cup_h      = 9.2,
+    cup_dia    = 23.1,
+    cup_h      = 8.5,
     face_down  = true,
     show_wires = true
 ) {
-    rim_dia     = outer_dia;        // 40.0mm
-    cage_dia    = 38.0;             // 38.0mm cylindrical window tier
-    mid_dia     = 32.0;             // 32.0mm middle cylindrical collar tier
-    pot_dia     = cup_dia;          // 23.0mm rear steel magnet cup
-    pot_h       = cup_h;            // 9.2mm rear cup height
-    gasket_h    = 1.2;              // front foam gasket
-    rim_flange_h= 2.2;              // front metal rim flange thickness
-    shelf1_z    = 6.5;              // height of 38->32mm horizontal step
-    shelf2_z    = total_h - pot_h;  // height of 32->23mm step (~11.8mm)
-    surround_od = 36.2;             // rubber surround outer diameter
-    surround_id = 26.5;             // rubber surround inner diameter
-    dustcap_dia = 16.0;             // center convex dustcap diameter
-    cone_depth  = 5.0;              // cone dish depth
+    rim_dia      = outer_dia;        // 40.0mm
+    rim_flange_h = 2.5;              // 2.5mm front rim (flange + gasket)
+    cage_dia     = 36.0;             // 36.0mm window cage tier
+    mid_dia      = 30.5;             // 30.5mm middle collar tier
+    mid_h        = 1.9;              // 1.9mm middle collar height
+    pot_dia      = cup_dia;          // 23.1mm top magnet cup
+    pot_h        = cup_h;            // 8.5mm top magnet cup height
+    gasket_h     = 1.2;              // front foam gasket
+    shelf2_z     = total_h - pot_h;  // 12.5mm (step to Ø23.1mm pot)
+    shelf1_z     = shelf2_z - mid_h; // 10.6mm (step to Ø30.5mm collar)
+    cage_h       = shelf1_z - rim_flange_h; // 8.1mm window cage height
+    surround_od  = 34.5;             // rubber surround outer diameter
+    surround_id  = 25.0;             // rubber surround inner diameter
+    dustcap_dia  = 15.0;             // center convex dustcap diameter
+    cone_depth   = 4.5;              // cone dish depth
 
     translate([0, 0, face_down ? 0 : total_h])
     mirror([0, 0, face_down ? 0 : 1]) {
@@ -665,69 +665,68 @@ module fm1_aliexpress_40mm_speaker_3d(
         // 1. Matte Black Stamped Steel Basket & Rear Magnet Pot
         // ----------------------------------------------------------------------
         color([0.16, 0.16, 0.18]) {
-            // A. Outer Ø40mm Front Rim Flange
+            // A. Outer Ø40mm Front Rim Flange (Z = 0 to 2.5mm)
             difference() {
                 cylinder(d = rim_dia, h = rim_flange_h);
                 translate([0, 0, -0.1])
                     cylinder(d = surround_od - 0.5, h = rim_flange_h + 0.2);
             }
 
-            // B. Ø38mm Cylindrical Window Tier with 4 Open Acoustic Windows
+            // B. Ø36mm Cylindrical Window Tier with 4 Open Acoustic Windows (Z = 2.5 to 10.6mm)
             difference() {
-                // Cylindrical shell
+                // Cylindrical cage shell
                 translate([0, 0, rim_flange_h])
-                    cylinder(d = cage_dia, h = shelf1_z - rim_flange_h);
+                    cylinder(d = cage_dia, h = cage_h);
                 translate([0, 0, rim_flange_h - 0.1])
-                    cylinder(d = cage_dia - 2.4, h = shelf1_z - rim_flange_h + 0.2);
+                    cylinder(d = cage_dia - 2.0, h = cage_h + 0.2);
 
-                // 4 Large Rectangular Acoustic Cutout Windows
+                // 4 Large Open Acoustic Windows showing the golden woven cone
                 for (ang = [0, 90, 180, 270]) {
                     rotate([0, 0, ang])
-                        translate([0, 0, rim_flange_h + 0.5])
-                            cube([cage_dia + 2.0, 15.5, shelf1_z - rim_flange_h - 0.8], center = true);
+                        translate([0, 0, rim_flange_h + cage_h / 2])
+                            cube([cage_dia + 2.0, 16.0, cage_h - 1.2], center = true);
                 }
             }
 
-            // C. Horizontal Step 1: Distinct shelf stepping in from Ø38mm to Ø32mm
+            // C. Horizontal Step 1: Shelf stepping in from Ø36.0mm to Ø30.5mm at Z = 10.6mm
             translate([0, 0, shelf1_z])
                 difference() {
-                    cylinder(d = cage_dia, h = 0.8);
+                    cylinder(d = cage_dia, h = 0.5);
                     translate([0, 0, -0.1])
-                        cylinder(d = mid_dia - 2.4, h = 1.0);
+                        cylinder(d = mid_dia - 2.0, h = 0.7);
                 }
 
-            // D. Ø32mm Middle Cylindrical Tier
-            translate([0, 0, shelf1_z + 0.7])
+            // D. Ø30.5mm Middle Cylindrical Tier (Z = 10.6 to 12.5mm, height 1.9mm)
+            translate([0, 0, shelf1_z + 0.5])
                 difference() {
-                    cylinder(d = mid_dia, h = shelf2_z - shelf1_z - 0.6);
+                    cylinder(d = mid_dia, h = mid_h - 0.5);
                     translate([0, 0, -0.1])
-                        cylinder(d = mid_dia - 2.4, h = shelf2_z - shelf1_z - 0.4);
+                        cylinder(d = mid_dia - 2.0, h = mid_h);
                 }
 
-            // E. Horizontal Step 2: Step in from Ø32mm to Ø23mm at magnet cup base
+            // E. Horizontal Step 2: Step in from Ø30.5mm to Ø23.1mm at Z = 12.5mm
             translate([0, 0, shelf2_z])
                 difference() {
-                    cylinder(d = mid_dia, h = 0.8);
+                    cylinder(d = mid_dia, h = 0.5);
                     translate([0, 0, -0.1])
-                        cylinder(d = pot_dia - 2.4, h = 1.0);
+                        cylinder(d = pot_dia - 2.0, h = 0.7);
                 }
 
-            // F. Ø23mm Rear Shielded Magnet Pot with Smooth Rounded Dome Top
-            translate([0, 0, shelf2_z + 0.8]) {
-                cylinder(d = pot_dia, h = max(1.0, pot_h - 2.6));
-                // Rounded dome cap on top
-                translate([0, 0, pot_h - 2.6])
-                    cylinder(d1 = pot_dia, d2 = pot_dia - 3.2, h = 1.8);
-                translate([0, 0, pot_h - 0.8])
-                    cylinder(d = pot_dia - 3.2, h = 0.8);
+            // F. Ø23.1mm Rear Shielded Magnet Pot (Z = 12.5 to 21.0mm, height 8.5mm)
+            translate([0, 0, shelf2_z + 0.5]) {
+                cylinder(d = pot_dia, h = max(1.0, pot_h - 2.5));
+                // Smooth rounded dome top
+                translate([0, 0, pot_h - 2.5])
+                    cylinder(d1 = pot_dia, d2 = pot_dia - 3.2, h = 1.6);
+                translate([0, 0, pot_h - 0.9])
+                    cylinder(d = pot_dia - 3.2, h = 0.9);
             }
         }
 
         // ----------------------------------------------------------------------
         // 2. Golden Woven Composite Cone (visible through windows)
         // ----------------------------------------------------------------------
-        cone_z_bot = rim_flange_h + 0.6;
-        cone_z_top = shelf1_z + 0.5;
+        cone_z_bot = rim_flange_h + 0.5;
         color([0.76, 0.62, 0.22]) {
             difference() {
                 translate([0, 0, cone_z_bot])
@@ -774,26 +773,26 @@ module fm1_aliexpress_40mm_speaker_3d(
         if (show_wires) {
             // White phenolic terminal backing board
             color([0.94, 0.92, 0.85]) {
-                translate([-cage_dia/2 + 0.4, 0, rim_flange_h + 1.8])
-                    cube([1.8, 18.0, 3.2], center = true);
+                translate([-cage_dia/2 + 0.4, 0, rim_flange_h + 2.4])
+                    cube([1.8, 18.0, 4.0], center = true);
             }
 
             // Silver solder eyelets
             color([0.82, 0.84, 0.88]) {
-                translate([-cage_dia/2 - 0.2, -5.5, rim_flange_h + 1.8])
+                translate([-cage_dia/2 - 0.2, -5.5, rim_flange_h + 2.4])
                     rotate([0, 90, 0])
                         cylinder(d = 2.4, h = 1.2, center = true);
-                translate([-cage_dia/2 - 0.2,  5.5, rim_flange_h + 1.8])
+                translate([-cage_dia/2 - 0.2,  5.5, rim_flange_h + 2.4])
                     rotate([0, 90, 0])
                         cylinder(d = 2.4, h = 1.2, center = true);
             }
 
             // Copper tinsel lead wires going from eyelets to cone
             color([0.85, 0.45, 0.15]) {
-                translate([-cage_dia/2 + 2.0, -4.5, rim_flange_h + 1.6])
+                translate([-cage_dia/2 + 2.0, -4.5, rim_flange_h + 2.2])
                     rotate([0, 30, -25])
                         cylinder(d = 0.5, h = 6.0);
-                translate([-cage_dia/2 + 2.0,  4.5, rim_flange_h + 1.6])
+                translate([-cage_dia/2 + 2.0,  4.5, rim_flange_h + 2.2])
                     rotate([0, 30,  25])
                         cylinder(d = 0.5, h = 6.0);
             }

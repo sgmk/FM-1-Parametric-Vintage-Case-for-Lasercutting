@@ -246,11 +246,11 @@ eff_spk_h   = (speaker_type == "stock_26mm")      ?  4.2 :
               (speaker_type == "upgrade_50mm")    ? 31.0 :
               speaker_total_height;
 eff_mag_dia = (speaker_type == "stock_26mm")      ? 16.0 :
-              (speaker_type == "aliexpress_40mm") ? 23.0 :
+              (speaker_type == "aliexpress_40mm") ? 23.1 :
               (speaker_type == "upgrade_50mm")    ? 45.0 :
               speaker_magnet_dia;
 eff_mag_h   = (speaker_type == "stock_26mm")      ?  2.5 :
-              (speaker_type == "aliexpress_40mm") ?  9.0 :
+              (speaker_type == "aliexpress_40mm") ?  8.5 :
               (speaker_type == "upgrade_50mm")    ?  8.0 :
               speaker_magnet_height;
 spk_box_x   = fm1_ofs_x + speaker_x;
@@ -676,8 +676,8 @@ module helmholtz_laser_layer3_roof_collar_2d() {
 }
 
 module helmholtz_laser_ring_32mm_2d() {
-    // Mid-basket riser ring (ID = 34.0mm clears tapering stamped basket dish)
-    id_collar = (eff_spk_dia == 40.0) ? 34.0 : (eff_mag_dia + 10.0);
+    // Mid-basket riser ring (ID = 36.8mm clears Ø36.0mm window cage)
+    id_collar = (eff_spk_dia == 40.0) ? 36.8 : (eff_mag_dia + 10.0);
     od_spk    = eff_spk_dia + 10.0; // 50.0mm
     offset_kerf() {
         difference() {
