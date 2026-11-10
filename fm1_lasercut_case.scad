@@ -48,20 +48,14 @@ usbc_barrel_height = 6.8; // [4.0:0.2:11.0]
 power_switch_mode = "laser_slider"; // [laser_slider:Captive Laser-Cut Slide Switch Extender, finger_notch:Wide Finger Access Slot + Top LED Window, stock_cap:Stock Plastic Cap Slot (4.0x4.0mm)]
 
 /* [Speaker & Acoustic Grille] */
-// Speaker driver model inside the enclosure (automatically selects 40x22mm or 50x31mm dimensions)
-speaker_type = "aliexpress_40mm"; // [aliexpress_40mm:AliExpress 40mm 4Ohm 5W Shielded Speaker (40x22mm, Cup 23x8mm), upgrade_50mm:Upgraded 50mm Full-Range Speaker (50x31mm, Magnet 45x8mm), stock_26mm:Stock 26.5mm Capsule (26.5x4.2mm), none:No Speaker / No Grille]
+// Speaker driver model inside the enclosure
+speaker_type = "aliexpress_40mm"; // [aliexpress_40mm:AliExpress 40mm 4Ohm 5W Shielded Speaker (40x22mm), upgrade_50mm:Upgraded 50mm Full-Range Speaker (50x31mm), stock_26mm:Stock 26.5mm Capsule (26.5x4.2mm), custom:Custom Dimensions (set in Custom tab), none:No Speaker / No Grille]
 
-// Outer rim diameter of the 50mm speaker in mm (measured 50mm)
-speaker_dia = 50.0; // [20.0:0.5:70.0]
+// Acoustic mounting & clamp architecture inside the case (see docs/PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md)
+resonator_type = "spider_clamp_3d"; // [spider_clamp_3d:3D-Printed 3-Pillar Spider Clamp Bridge (Recommended, 0.38L Aperiodic), stepped_clamp_laser:Laser-Cut 2-Layer Stepped Rim Clamp (100% Wood, 0.38L Aperiodic), helmholtz_3d_pod:3D-Printed Wide-Body Sealed Helmholtz Tub (0.15L Bass-Reflex), none:None (Open Inside Case)]
 
-// Total height of the 50mm speaker from front gasket to magnet back in mm (measured 31mm)
-speaker_total_height = 31.0; // [4.0:0.5:45.0]
-
-// Diameter of the rear ferrite magnet of the 50mm speaker in mm (measured 45mm)
-speaker_magnet_dia = 45.0; // [15.0:0.5:60.0]
-
-// Height of the rear ferrite magnet + pole plate in mm (measured 8mm)
-speaker_magnet_height = 8.0; // [2.0:0.2:25.0]
+// Bottom panel speaker cutout style
+speaker_grille_style = "fm1_pinwheel"; // [fm1_pinwheel:Original FM-1 Curved Pinwheel Grille, perforated:Perforated Acoustic Grille Dots, open_hole:Open Round Cutout (for recessed speaker), none:Solid Bottom (No Cutout)]
 
 // Speaker X center in FM-1 coordinates in mm (38 = rear-left zone; 30 = front-left under keys)
 speaker_x = 38.0; // [10.0:0.5:150.0]
@@ -72,29 +66,28 @@ speaker_y = 64.0; // [10.0:0.5:85.0]
 // Vertical Z offset of the speaker in mm (0 = resting flush on inside of Bottom Panel; negative = recessed into Bottom Panel)
 speaker_z_offset = 0.0; // [-10.0:0.5:25.0]
 
-// How the speaker is mounted inside the enclosure
-speaker_mount = "bottom_panel"; // [bottom_panel:Flat on Bottom Panel (Horizontal), pcb_underside:Tilted with PCB Underside]
+/* [Custom Speaker Dimensions (when speaker_type == custom)] */
+// Outer rim diameter of custom speaker in mm
+speaker_dia = 50.0; // [20.0:0.5:70.0]
 
-// Speaker orientation (true = cone facing down into bottom panel grille; false = magnet on bottom panel, cone facing up)
-speaker_face_down = true;
+// Total height of custom speaker from front gasket to magnet back in mm
+speaker_total_height = 31.0; // [4.0:0.5:45.0]
 
-// Sub-bass resonator / speaker clamp architecture inside the case (see docs/PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md)
-resonator_type = "spider_clamp_3d"; // [spider_clamp_3d:3D-Printed 3-Pillar Spider Clamp Bridge + 0.38L Aperiodic Box (Recommended), stepped_clamp_laser:Laser-Cut 2-Layer Stepped Rim Clamp + 0.38L Aperiodic Box, helmholtz_3d_pod:3D-Printed Wide-Body Sealed 0.15L Helmholtz Tub + 45deg Swept Port, helmholtz_laser_duct:Laser-Cut Stacked Wood Helmholtz Tunnel, retainer_ring:Laser-Cut Single Retainer Ring Only, none:None (Open Inside Case)]
+// Diameter of rear magnet / cup in mm
+speaker_magnet_dia = 45.0; // [15.0:0.5:60.0]
 
-// Keep legacy retainer ring toggle synchronized when resonator_type == "retainer_ring"
-show_speaker_retainer = true;
+// Height of rear magnet / cup in mm
+speaker_magnet_height = 8.0; // [2.0:0.2:25.0]
 
+/* [Helmholtz Port Tuning (when using helmholtz_3d_pod)] */
 // Internal width of the Helmholtz bass-reflex slot tunnel in mm
 helmholtz_port_w = 25.0; // [12.0:1.0:40.0]
 
 // Internal height of the Helmholtz slot tunnel in mm (6.0mm = 2 stacked 3mm laser-cut wood layers)
 helmholtz_port_h = 6.0; // [3.0:0.5:15.0]
 
-// Physical length of the Helmholtz slot tunnel in mm (56mm tunes 0.12L chamber to ~135 Hz)
+// Physical length of the Helmholtz slot tunnel in mm (56mm tunes 0.15L chamber to ~135 Hz)
 helmholtz_port_length = 56.0; // [20.0:1.0:80.0]
-
-// Bottom panel speaker cutout style
-speaker_grille_style = "fm1_pinwheel"; // [fm1_pinwheel:Original FM-1 Curved Pinwheel Grille, perforated:Perforated Acoustic Grille Dots, open_hole:Open Round Cutout (for recessed speaker), none:Solid Bottom (No Cutout)]
 
 /* [Vintage Side Panels (Cheeks)] */
 // Extend the side panels past the main box (creates a vintage synth lip and overhang)
@@ -127,7 +120,7 @@ kerf = 0.08; // [0.0:0.01:0.4]
 
 /* [Display Mode] */
 // What to render
-part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), speaker_ring:Speaker Retainer / Stepped Clamp Rings (2D), spider_clamp:3D-Printed 3-Pillar Spider Clamp Bridge (3D STL), helmholtz_laser:Laser-Cut Helmholtz Tunnel Layers (2D), helmholtz_pod:3D-Printed Wide-Body Helmholtz Tub (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
+part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), acoustic_mount:Acoustic Mount / Clamp for Selected Resonator Type (2D/3D), spider_clamp:3D Spider Clamp Bridge (3D STL), stepped_clamp:Laser-Cut 2-Layer Stepped Rim Clamp (2D), helmholtz_pod:3D-Printed Wide-Body Helmholtz Tub (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
 
 // Show the 3D FM-1 PCB, silicone pads, encoders, screen & battery inside the case
 show_internals = true;
@@ -143,6 +136,11 @@ module __customizer_limit__() {}
 
 /* [Hidden] */
 $fn = 48;
+
+// Fixed mounting orientation & legacy compatibility flags
+speaker_mount = "bottom_panel";
+speaker_face_down = true;
+show_speaker_retainer = (resonator_type != "none");
 
 // Effective panel thicknesses
 T  = thickness;
@@ -241,15 +239,20 @@ KEYS_CX    =  81.00; KEYS_CY    = 24.25; KEYS_W    = 147.80; KEYS_H    = 34.30;
 // Effective speaker dimensions & projected Bottom Panel coordinates
 eff_spk_dia = (speaker_type == "stock_26mm")      ? 26.5 :
               (speaker_type == "aliexpress_40mm") ? 40.0 :
-              ((speaker_dia == 40.0 && speaker_magnet_dia == 23.0) ? 50.0 : speaker_dia);
+              (speaker_type == "upgrade_50mm")    ? 50.0 :
+              speaker_dia;
 eff_spk_h   = (speaker_type == "stock_26mm")      ?  4.2 :
               (speaker_type == "aliexpress_40mm") ? 22.0 :
-              ((speaker_total_height == 22.0 && speaker_magnet_dia == 23.0) ? 31.0 : speaker_total_height);
+              (speaker_type == "upgrade_50mm")    ? 31.0 :
+              speaker_total_height;
 eff_mag_dia = (speaker_type == "stock_26mm")      ? 16.0 :
               (speaker_type == "aliexpress_40mm") ? 23.0 :
-              ((speaker_magnet_dia == 23.0) ? 45.0 : speaker_magnet_dia);
+              (speaker_type == "upgrade_50mm")    ? 45.0 :
+              speaker_magnet_dia;
 eff_mag_h   = (speaker_type == "stock_26mm")      ?  2.5 :
-              (speaker_type == "aliexpress_40mm") ?  8.0 : speaker_magnet_height;
+              (speaker_type == "aliexpress_40mm") ?  8.0 :
+              (speaker_type == "upgrade_50mm")    ?  8.0 :
+              speaker_magnet_height;
 spk_box_x   = fm1_ofs_x + speaker_x;
 spk_box_y   = T + (fm1_ofs_y + speaker_y) * cos(panel_tilt);
 
@@ -1117,7 +1120,7 @@ module assembly(explode = 0.0) {
                 translate([Ts + spk_box_x, spk_box_y, 3 * T - explode * 0.45])
                     linear_extrude(T)
                         helmholtz_laser_roof_2d();
-        } else if (resonator_type == "retainer_ring" || show_speaker_retainer) {
+        } else if (resonator_type == "retainer_ring") {
             color("#5c4a3e", 0.85)
                 translate([Ts + spk_box_x, spk_box_y, T - explode * 0.6])
                     linear_extrude(T)
@@ -1247,7 +1250,7 @@ module layout() {
         } else if (resonator_type == "helmholtz_laser_duct") {
             translate([2 * ow + 2 * Ts + 2 * spacing + 45, row3_y + eff_spk_dia/2 + 6])
                 helmholtz_laser_parts_2d();
-        } else if (resonator_type == "retainer_ring" || show_speaker_retainer) {
+        } else if (resonator_type == "retainer_ring") {
             translate([2 * ow + 2 * Ts + 2 * spacing + 45, row3_y + eff_spk_dia/2 + 6])
                 speaker_retainer_ring_2d();
         }
@@ -1277,8 +1280,20 @@ if (part_to_show == "assembly") {
     back_panel();
 } else if (part_to_show == "slider") {
     power_switch_slider_2d();
-} else if (part_to_show == "speaker_ring") {
-    if (resonator_type == "stepped_clamp_laser") {
+} else if (part_to_show == "acoustic_mount") {
+    if (resonator_type == "spider_clamp_3d") {
+        speaker_spider_clamp_3d();
+    } else if (resonator_type == "stepped_clamp_laser") {
+        stepped_clamp_laser_layers_2d();
+    } else if (resonator_type == "helmholtz_3d_pod") {
+        helmholtz_3d_pod_model();
+    } else if (resonator_type == "helmholtz_laser_duct") {
+        helmholtz_laser_parts_2d();
+    } else {
+        speaker_retainer_ring_2d();
+    }
+} else if (part_to_show == "speaker_ring" || part_to_show == "stepped_clamp") {
+    if (resonator_type == "stepped_clamp_laser" || part_to_show == "stepped_clamp") {
         stepped_clamp_laser_layers_2d();
     } else {
         speaker_retainer_ring_2d();

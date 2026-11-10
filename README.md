@@ -126,6 +126,10 @@ With the extra internal vertical depth of the tilted vintage enclosure (`case_in
 | **Vintage Side Cheeks** | `cheek_extension` | `7.0 mm` | Overhang of the sculpted side panels past the main box |
 | | `cheek_radius_top` | `8.0 mm` | Corner radius for the top-front and top-back cheek profile |
 | | `cheek_radius_bottom` | `2.0 mm` | Corner radius for the bottom-front and bottom-back cheek feet |
+| **Speaker & Acoustics** | `speaker_type` | `"aliexpress_40mm"` | `"aliexpress_40mm"`, `"upgrade_50mm"`, `"stock_26mm"`, `"custom"`, or `"none"` |
+| | `resonator_type` | `"spider_clamp_3d"` | `"spider_clamp_3d"`, `"stepped_clamp_laser"`, `"helmholtz_3d_pod"`, or `"none"` |
+| | `speaker_grille_style` | `"fm1_pinwheel"` | `"fm1_pinwheel"`, `"perforated"`, `"open_hole"`, or `"none"` |
+| | `speaker_x` / `speaker_y` | `38.0` / `64.0 mm` | Speaker position in FM-1 coordinates (Rear-Left cavity) |
 | **Material & Laser** | `thickness` | `3.0 mm` | Material thickness for Top, Bottom, Front, and Back panels |
 | | `thickness_sides` | `6.5 mm` | Independent material thickness for the Left & Right wooden cheeks (`0` = same as `thickness`) |
 | | `notch_length` | `30.0 mm` | Target finger-joint tab length |
