@@ -585,18 +585,26 @@ module helmholtz_port_exit_2d() {
 //   A bead of silicone / gasket tape around the 23mm cup creates a 100% airtight seal!
 
 // M3 Screw Ears Configuration:
-m3_hole_d     = 3.2;   // 3.2mm clearance hole for standard M3 machine screws
-ear_screw_r_y = 29.0;  // Center of M3 screw on ring ears (+-Y)
-ear_tab_r     = 4.8;   // Outer radius of ear tab around screw hole
+// Angled towards the backside (+Y) so they never overhang the front of the case!
+m3_hole_d      = 3.2;   // 3.2mm clearance hole for standard M3 machine screws
+ear_screw_dist = 29.0;  // Radial distance from speaker center to M3 screw hole
+ear_tab_r      = 4.8;   // Outer radius of ear tab around screw hole
+ear_angle_1    = 55.0;  // Back-right ear angle (degrees, towards backside +Y)
+ear_angle_2    = 125.0; // Back-left ear angle (degrees, towards backside +Y)
+
+ear1_pos = [ear_screw_dist * cos(ear_angle_1), ear_screw_dist * sin(ear_angle_1)];
+ear2_pos = [ear_screw_dist * cos(ear_angle_2), ear_screw_dist * sin(ear_angle_2)];
 
 module helmholtz_ring_ears_outer_2d() {
     if (helmholtz_screw_ears) {
+        // Back-Right Ear (+X, +Y towards backside)
         hull() {
-            translate([0,  ear_screw_r_y]) circle(r = ear_tab_r);
+            translate(ear1_pos) circle(r = ear_tab_r);
             circle(d = eff_spk_dia + 10.0);
         }
+        // Back-Left Ear (-X, +Y towards backside)
         hull() {
-            translate([0, -ear_screw_r_y]) circle(r = ear_tab_r);
+            translate(ear2_pos) circle(r = ear_tab_r);
             circle(d = eff_spk_dia + 10.0);
         }
     }
@@ -604,8 +612,8 @@ module helmholtz_ring_ears_outer_2d() {
 
 module helmholtz_ring_ear_holes_2d() {
     if (helmholtz_screw_ears) {
-        translate([0,  ear_screw_r_y]) circle(d = m3_hole_d);
-        translate([0, -ear_screw_r_y]) circle(d = m3_hole_d);
+        translate(ear1_pos) circle(d = m3_hole_d);
+        translate(ear2_pos) circle(d = m3_hole_d);
     }
 }
 
@@ -763,7 +771,8 @@ module helmholtz_laser_layer4_pot_seal_2d() {
 
 module helmholtz_laser_parts_2d() {
     wall_w     = 5.0;
-    outer_h_y  = helmholtz_screw_ears ? (2 * (ear_screw_r_y + ear_tab_r) + 4.0) : max(eff_spk_dia + 10.0, helmholtz_port_w + 2 * wall_w);
+    max_ear_y  = helmholtz_screw_ears ? (ear1_pos[1] + ear_tab_r) : (eff_spk_dia/2 + 5.0);
+    outer_h_y  = eff_spk_dia/2 + 5.0 + max_ear_y + 4.0;
     step_y     = outer_h_y + 4.0;
     od_spk     = eff_spk_dia + 10.0;
     col2_x     = od_spk + helmholtz_port_length + 28.0;
@@ -1554,8 +1563,8 @@ module speaker_helmholtz_3d_view(explode = 0.0) {
             port_x_end = eff_spk_dia / 2 + helmholtz_port_length + slot_len_x;
             color("#cfd8dc") {
                 // 2 Long M3 Screws clamping all 7 layers of the circular pot (Z = -T to 7*T)
-                for (sy = [ear_screw_r_y, -ear_screw_r_y]) {
-                    translate([0, sy, -T - 3.0]) {
+                for (pt = [ear1_pos, ear2_pos]) {
+                    translate([pt[0], pt[1], -T - 3.0]) {
                         // M3 bolt shank
                         cylinder(d = 2.9, h = 8 * T + 7.0);
                         // Bottom screw head (under bottom panel)
