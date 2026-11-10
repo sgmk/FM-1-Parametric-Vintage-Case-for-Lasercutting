@@ -89,6 +89,9 @@ helmholtz_port_h = 6.0; // [3.0:0.5:15.0]
 // Physical length of the Helmholtz slot tunnel in mm (56mm tunes 0.15L chamber to ~135 Hz)
 helmholtz_port_length = 56.0; // [20.0:1.0:80.0]
 
+// Add M3 screw ear extensions to bolt the Helmholtz laser-cut stack together with M3 screws
+helmholtz_screw_ears = true;
+
 /* [Vintage Side Panels (Cheeks)] */
 // Extend the side panels past the main box (creates a vintage synth lip and overhang)
 cheek_extension = 7.0; // [0.0:0.5:25.0]
@@ -581,6 +584,49 @@ module helmholtz_port_exit_2d() {
 //   Magnet Pot Seal Collar (ID = 23.5mm) slips snugly over the Ø23.0mm steel cup.
 //   A bead of silicone / gasket tape around the 23mm cup creates a 100% airtight seal!
 
+// M3 Screw Ears Configuration:
+m3_hole_d     = 3.2;   // 3.2mm clearance hole for standard M3 machine screws
+ear_screw_r_y = 29.0;  // Center of M3 screw on ring ears (+-Y)
+ear_tab_r     = 4.8;   // Outer radius of ear tab around screw hole
+
+module helmholtz_ring_ears_outer_2d() {
+    if (helmholtz_screw_ears) {
+        hull() {
+            translate([0,  ear_screw_r_y]) circle(r = ear_tab_r);
+            circle(d = eff_spk_dia + 10.0);
+        }
+        hull() {
+            translate([0, -ear_screw_r_y]) circle(r = ear_tab_r);
+            circle(d = eff_spk_dia + 10.0);
+        }
+    }
+}
+
+module helmholtz_ring_ear_holes_2d() {
+    if (helmholtz_screw_ears) {
+        translate([0,  ear_screw_r_y]) circle(d = m3_hole_d);
+        translate([0, -ear_screw_r_y]) circle(d = m3_hole_d);
+    }
+}
+
+module helmholtz_tunnel_ear_outer_2d(port_x_end, wall_w) {
+    if (helmholtz_screw_ears) {
+        hull() {
+            translate([port_x_end + wall_w + 4.0, 0])
+                circle(r = ear_tab_r);
+            translate([port_x_end, -ear_tab_r])
+                square([wall_w, 2 * ear_tab_r]);
+        }
+    }
+}
+
+module helmholtz_tunnel_ear_hole_2d(port_x_end, wall_w) {
+    if (helmholtz_screw_ears) {
+        translate([port_x_end + wall_w + 4.0, 0])
+            circle(d = m3_hole_d);
+    }
+}
+
 module helmholtz_laser_layer1_spacer_2d() {
     id_spacer   = (eff_spk_dia == 40.0) ? 36.8 : (eff_spk_dia - 3.2);
     wall_w      = 5.0;
@@ -595,10 +641,14 @@ module helmholtz_laser_layer1_spacer_2d() {
                 circle(d = od_spk);
                 translate([0, -outer_h_y / 2])
                     square([port_x_end + wall_w, outer_h_y]);
+                helmholtz_ring_ears_outer_2d();
+                helmholtz_tunnel_ear_outer_2d(port_x_end, wall_w);
             }
             circle(d = id_spacer);
             translate([0, -helmholtz_port_w / 2])
                 square([port_x_end, helmholtz_port_w]);
+            helmholtz_ring_ear_holes_2d();
+            helmholtz_tunnel_ear_hole_2d(port_x_end, wall_w);
         }
     }
 }
@@ -638,12 +688,15 @@ module helmholtz_laser_layer2_centering_2d() {
                 circle(d = od_spk);
                 translate([0, -outer_h_y / 2])
                     square([port_x_end + wall_w, outer_h_y]);
+                helmholtz_ring_ears_outer_2d();
+                helmholtz_tunnel_ear_outer_2d(port_x_end, wall_w);
             }
             circle(d = id_center);
             translate([0, -helmholtz_port_w / 2])
                 square([port_x_end, helmholtz_port_w]);
-            // Compact solder latch notch + narrow 4mm wire exit slot
             speaker_solder_latch_relief_2d(through_wall = true);
+            helmholtz_ring_ear_holes_2d();
+            helmholtz_tunnel_ear_hole_2d(port_x_end, wall_w);
         }
     }
 }
@@ -665,12 +718,13 @@ module helmholtz_laser_layer3_roof_collar_2d() {
                 // Solid wooden roof covering the tunnel channel
                 translate([0, -outer_h_y / 2])
                     square([port_x_end + wall_w, outer_h_y]);
+                helmholtz_ring_ears_outer_2d();
+                helmholtz_tunnel_ear_outer_2d(port_x_end, wall_w);
             }
-            // Collar opening clears speaker basket and wire terminals
             circle(d = id_collar);
-
-            // Compact solder latch relief pocket (keeps 2.8mm solid outer wall intact)
             speaker_solder_latch_relief_2d(through_wall = false);
+            helmholtz_ring_ear_holes_2d();
+            helmholtz_tunnel_ear_hole_2d(port_x_end, wall_w);
         }
     }
 }
@@ -681,32 +735,38 @@ module helmholtz_laser_ring_32mm_2d() {
     od_spk    = eff_spk_dia + 10.0; // 50.0mm
     offset_kerf() {
         difference() {
-            circle(d = od_spk);
+            union() {
+                circle(d = od_spk);
+                helmholtz_ring_ears_outer_2d();
+            }
             circle(d = id_collar);
-
-            // Compact solder latch relief pocket (keeps 2.8mm solid outer wall intact)
             speaker_solder_latch_relief_2d(through_wall = false);
+            helmholtz_ring_ear_holes_2d();
         }
     }
 }
 
 module helmholtz_laser_layer4_pot_seal_2d() {
-    id_pot = eff_mag_dia + 0.5; // 23.5mm (slips snugly over 23.0mm steel cup)
+    id_pot = eff_mag_dia + 0.5; // 23.6mm (slips snugly over 23.1mm steel cup)
     od_spk = eff_spk_dia + 10.0; // 50.0mm
     offset_kerf() {
         difference() {
-            circle(d = od_spk);
+            union() {
+                circle(d = od_spk);
+                helmholtz_ring_ears_outer_2d();
+            }
             circle(d = id_pot);
+            helmholtz_ring_ear_holes_2d();
         }
     }
 }
 
 module helmholtz_laser_parts_2d() {
     wall_w     = 5.0;
-    outer_h_y  = max(eff_spk_dia + 10.0, helmholtz_port_w + 2 * wall_w);
-    step_y     = outer_h_y + 5.0;
+    outer_h_y  = helmholtz_screw_ears ? (2 * (ear_screw_r_y + ear_tab_r) + 4.0) : max(eff_spk_dia + 10.0, helmholtz_port_w + 2 * wall_w);
+    step_y     = outer_h_y + 4.0;
     od_spk     = eff_spk_dia + 10.0;
-    col2_x     = od_spk + helmholtz_port_length + 20.0;
+    col2_x     = od_spk + helmholtz_port_length + 28.0;
 
     // Column 1: The 3 Tunnel Layers (L1: Spacer, L2: Centering + Wire Slot, L3: Tunnel Roof)
     translate([0, 0])
@@ -717,10 +777,10 @@ module helmholtz_laser_parts_2d() {
         helmholtz_laser_layer3_roof_collar_2d();
 
     // Column 2: Riser & Pot Seal Rings (stacks above Layer 3 to reach and seal against 23mm steel cup!)
-    // 1x 34mm basket collar ring (Layer 4)
+    // 1x 36.8mm basket collar ring (Layer 4)
     translate([col2_x, 0])
         helmholtz_laser_ring_32mm_2d();
-    // 3x 23.5mm magnet pot seal rings (Layers 5, 6, 7 -> matches total 21mm speaker height!)
+    // 3x 23.6mm magnet pot seal rings (Layers 5, 6, 7 -> matches total 21mm speaker height!)
     translate([col2_x, step_y])
         helmholtz_laser_layer4_pot_seal_2d();
     translate([col2_x, 2 * step_y])
@@ -957,6 +1017,17 @@ module bottom_panel() {
             if (speaker_type != "none" && (resonator_type == "helmholtz_3d_pod" || resonator_type == "helmholtz_laser_duct")) {
                 translate([spk_box_x, spk_box_y])
                     helmholtz_port_exit_2d();
+            }
+
+            // Matching M3 Mounting Screw Holes for the Helmholtz Resonator Stack
+            if (speaker_type != "none" && resonator_type == "helmholtz_laser_duct" && helmholtz_screw_ears) {
+                slot_len_x = 10.0;
+                wall_w     = 5.0;
+                port_x_end = eff_spk_dia / 2 + helmholtz_port_length + slot_len_x;
+                translate([spk_box_x, spk_box_y]) {
+                    helmholtz_ring_ear_holes_2d();
+                    helmholtz_tunnel_ear_hole_2d(port_x_end, wall_w);
+                }
             }
         }
     }
@@ -1473,6 +1544,35 @@ module speaker_helmholtz_3d_view(explode = 0.0) {
                     magnet_h   = eff_mag_h,
                     face_down  = true
                 );
+            }
+        }
+
+        // 4. Stainless Steel M3 Machine Screws & Hex Nuts (when helmholtz_screw_ears is active)
+        if (helmholtz_screw_ears) {
+            slot_len_x = 10.0;
+            wall_w     = 5.0;
+            port_x_end = eff_spk_dia / 2 + helmholtz_port_length + slot_len_x;
+            color("#cfd8dc") {
+                // 2 Long M3 Screws clamping all 7 layers of the circular pot (Z = -T to 7*T)
+                for (sy = [ear_screw_r_y, -ear_screw_r_y]) {
+                    translate([0, sy, -T - 3.0]) {
+                        // M3 bolt shank
+                        cylinder(d = 2.9, h = 8 * T + 7.0);
+                        // Bottom screw head (under bottom panel)
+                        cylinder(d = 5.6, h = 2.8);
+                        // Top M3 hex nut on top ring
+                        translate([0, 0, 8 * T + 3.0])
+                            cylinder(d = 6.2, h = 2.4, $fn = 6);
+                    }
+                }
+
+                // 1 Short M3 Screw clamping the tunnel arm (Layers 1, 2, 3)
+                translate([port_x_end + wall_w + 4.0, 0, -T - 3.0]) {
+                    cylinder(d = 2.9, h = 4 * T + 7.0);
+                    cylinder(d = 5.6, h = 2.8);
+                    translate([0, 0, 4 * T + 3.0])
+                        cylinder(d = 6.2, h = 2.4, $fn = 6);
+                }
             }
         }
     }
