@@ -92,6 +92,22 @@ helmholtz_port_length = 56.0; // [20.0:1.0:80.0]
 // Add M3 screw ear extensions to bolt the Helmholtz laser-cut stack together with M3 screws
 helmholtz_screw_ears = true;
 
+/* [Screen Mount & Bezel Options] */
+// Screen cutout style: "bare_screen" cuts hole for LCD module only (plastic cover sits on top of wood); "full_bezel" cuts hole for whole 37.5mm cover flush
+screen_mount_style = "bare_screen"; // ["bare_screen", "full_bezel"]
+// Width of the bare LCD module opening in mm (standard 1.54" TFT module is ~31.5 - 32.0mm)
+screen_bare_w = 32.0; // [28.0:0.1:37.0]
+// Height of the bare LCD module opening in mm (standard 1.54" TFT module is ~34.0 - 35.5mm)
+screen_bare_h = 34.5; // [28.0:0.1:37.0]
+// Corner radius of the screen cutout in mm
+screen_bare_r = 1.5;  // [0.0:0.5:4.0]
+
+/* [Frontplate Laser Engraving] */
+// Enable laser engraving artwork on the top faceplate from an SVG file
+enable_frontplate_engraving = true;
+// Relative or absolute path to the SVG vector engraving artwork
+engraving_svg_file = "laserfiles/fm1_frontplate_engraving.svg";
+
 /* [Vintage Side Panels (Cheeks)] */
 // Extend the side panels past the main box (creates a vintage synth lip and overhang)
 cheek_extension = 7.0; // [0.0:0.5:25.0]
@@ -123,7 +139,7 @@ kerf = 0.08; // [0.0:0.01:0.4]
 
 /* [Display Mode] */
 // What to render
-part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, helmholtz_3d:Dedicated 3D Speaker & Laser Helmholtz Duct View, helmholtz_3d_exploded:Dedicated 3D Exploded Speaker & Duct Stack, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), helmholtz_laser:Laser-Cut Helmholtz Resonator Parts (2D), stepped_clamp:Laser-Cut 2-Layer Stepped Clamp (2D), speaker_ring:Laser-Cut Speaker Retainer Ring (2D), helmholtz_pod:3D-Printed Helmholtz Resonator Tub (3D STL), spider_clamp:3D-Printed Spider Clamp Bridge (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
+part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, top_engraved:Top Faceplate with Engraving (3D/2D), helmholtz_3d:Dedicated 3D Speaker & Laser Helmholtz Duct View, helmholtz_3d_exploded:Dedicated 3D Exploded Speaker & Duct Stack, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), helmholtz_laser:Laser-Cut Helmholtz Resonator Parts (2D), stepped_clamp:Laser-Cut 2-Layer Stepped Clamp (2D), speaker_ring:Laser-Cut Speaker Retainer Ring (2D), helmholtz_pod:3D-Printed Helmholtz Resonator Tub (3D STL), spider_clamp:3D-Printed Spider Clamp Bridge (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
 
 // Show the 3D FM-1 PCB, silicone pads, encoders, screen & battery inside the case
 show_internals = true;
@@ -214,6 +230,8 @@ SCREEN_CX      = 61.10;
 SCREEN_CY      = 70.20;
 SCREEN_BEZEL_W = 37.50;
 SCREEN_BEZEL_H = 37.50;
+SCREEN_LCD_W   = 27.20;
+SCREEN_LCD_H   = 27.40;
 
 KNOB_COORDS = [
     [ 14.00, 81.00], // Master Volume
@@ -321,9 +339,16 @@ module rounded_square_2d(size, r) {
 module fm1_interface_cutouts_2d() {
     tol = CUTOUT_TOL;
 
-    // 1.54" Screen Glass Bezel Window
-    translate([SCREEN_CX - SCREEN_BEZEL_W/2 - tol, SCREEN_CY - SCREEN_BEZEL_H/2 - tol])
-        rounded_square_2d([SCREEN_BEZEL_W + 2*tol, SCREEN_BEZEL_H + 2*tol], 3.2);
+    // 1.54" Screen Window Cutout
+    if (screen_mount_style == "bare_screen") {
+        // Redesigned: Only bare LCD module fits into the cutout; plastic cover rests on top of the wood!
+        translate([SCREEN_CX - screen_bare_w/2 - tol, SCREEN_CY - screen_bare_h/2 - tol])
+            rounded_square_2d([screen_bare_w + 2*tol, screen_bare_h + 2*tol], screen_bare_r);
+    } else {
+        // Full Bezel: whole 37.5 x 37.5mm cover sits flush inside the wood
+        translate([SCREEN_CX - SCREEN_BEZEL_W/2 - tol, SCREEN_CY - SCREEN_BEZEL_H/2 - tol])
+            rounded_square_2d([SCREEN_BEZEL_W + 2*tol, SCREEN_BEZEL_H + 2*tol], 3.2);
+    }
 
     // 8 Encoder Knob Holes
     for (pt = KNOB_COORDS) {
@@ -1407,6 +1432,21 @@ module assembly(explode = 0.0) {
                 translate([0, 0, -T + explode])
                     linear_extrude(T)
                         top_panel();
+
+            // Laser Engraving Artwork on Top Faceplate
+            if (enable_frontplate_engraving) {
+                color("#1a110a", assembly_opacity)
+                    translate([fm1_ofs_x, fm1_ofs_y, 0.05 + explode])
+                        linear_extrude(0.1)
+                            import(engraving_svg_file);
+            }
+
+            // Plastic Screen Cover (resting on top of the wood faceplate when in bare_screen mode)
+            if (show_internals && screen_mount_style == "bare_screen") {
+                color([0.10, 0.10, 0.12, 0.85])
+                    translate([fm1_ofs_x + SCREEN_CX, fm1_ofs_y + SCREEN_CY, 0.10 + explode * 1.1])
+                        rrect_3d(SCREEN_BEZEL_W, SCREEN_BEZEL_H, 0.8, 3.2, center_xy = true);
+            }
         }
     }
 
@@ -1450,8 +1490,13 @@ module layout() {
     translate([Ts, 0])
         bottom_panel();
 
-    translate([ow + Ts + spacing, tab_len_front])
+    translate([ow + Ts + spacing, tab_len_front]) {
         top_panel();
+        if (enable_frontplate_engraving) {
+            #translate([fm1_ofs_x, fm1_ofs_y])
+                import(engraving_svg_file);
+        }
+    }
 
     // Row 2: Left & Right Vintage Cheek Panels
     row2_y = max(od, case_depth + tab_len_front + tab_len_back) + spacing + T + bot_ext;
@@ -1595,6 +1640,26 @@ module speaker_helmholtz_3d_view(explode = 0.0) {
     }
 }
 
+module top_panel_engraved_view() {
+    // 3D/2D Top Panel with laser engraving and top-mounted plastic screen cover
+    color("#cbb9a3")
+        linear_extrude(T)
+            top_panel();
+
+    if (enable_frontplate_engraving) {
+        color("#2b1a0e")
+            translate([fm1_ofs_x, fm1_ofs_y, T + 0.05])
+                linear_extrude(0.1)
+                    import(engraving_svg_file);
+    }
+
+    if (screen_mount_style == "bare_screen") {
+        color([0.10, 0.10, 0.12, 0.85])
+            translate([fm1_ofs_x + SCREEN_CX, fm1_ofs_y + SCREEN_CY, T + 0.15])
+                rrect_3d(SCREEN_BEZEL_W, SCREEN_BEZEL_H, 0.8, 3.2, center_xy = true);
+    }
+}
+
 // ==============================================================================
 // Main Render Controller
 // ==============================================================================
@@ -1602,6 +1667,8 @@ if (part_to_show == "assembly") {
     assembly(explode = 0.0);
 } else if (part_to_show == "exploded") {
     assembly(explode = explode_distance);
+} else if (part_to_show == "top_engraved") {
+    top_panel_engraved_view();
 } else if (part_to_show == "helmholtz_3d") {
     speaker_helmholtz_3d_view(explode = 0.0);
 } else if (part_to_show == "helmholtz_3d_exploded") {
