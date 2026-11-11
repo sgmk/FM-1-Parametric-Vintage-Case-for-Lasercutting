@@ -9,24 +9,9 @@
 
 use <fm1_pcb_and_silicone.scad>
 
-/* [Display Mode & View Selection] */
-// Top-level category (selects which sub-topic to display)
-view_category = "3d_views"; // [3d_views:1. 3D Assemblies & Exploded Views, laser_sheet:2. 2D Full Laser Cut Layout Sheet, case_panels:3. 2D Case Box Panels, laser_accessories:4. 2D Laser Accessories & Addons, stl_parts:5. 3D Printable STL Models, all_parts:6. Direct List (All Parts)]
-
-// [Sub-Topic: 3D Assemblies & Views] (active when view_category = "3d_views")
-show_3d = "assembly"; // [assembly:Full Case Assembly, exploded:Exploded Case View, top_engraved:Top Faceplate with Engraving & Frame, helmholtz_3d:Speaker & Helmholtz Stack, helmholtz_3d_exploded:Exploded Speaker & Helmholtz Stack, screen_frame_3d:Wooden Screen Frame & Window, pcb_support_3d:PCB Support Wedge, internals:FM-1 Electronics Only, speaker:Speaker Driver Only]
-
-// [Sub-Topic: 2D Case Box Panels] (active when view_category = "case_panels")
-show_panel = "top"; // [top:Top Faceplate, bottom:Bottom Panel, left:Left Cheek Panel, right:Right Cheek Panel, front:Front Panel, back:Back Panel]
-
-// [Sub-Topic: 2D Laser Accessories & Addons] (active when view_category = "laser_accessories")
-show_laser_addon = "screen_frame"; // [screen_frame:Thin Wooden Screen Frame, screen_window:Clear Screen Window Insert, pcb_support:PCB Keyboard Support Rail, slider:Power Switch Slider, helmholtz_laser:Helmholtz Resonator Wood Stack, stepped_clamp:2-Layer Stepped Retainer Clamp, speaker_ring:Speaker Retainer Ring]
-
-// [Sub-Topic: 3D Printable STL Models] (active when view_category = "stl_parts")
-show_stl = "pcb_support_wedge"; // [pcb_support_wedge:PCB Keyboard Support Wedge, helmholtz_pod:Helmholtz Resonator Tub Pod, spider_clamp:Speaker Spider Clamp Bridge]
-
-// Direct flat list selector (set to "auto" to use sub-topics above)
-part_to_show = "auto"; // [auto:Automatic (from sub-topics above), assembly:[3D] Full Case Assembly, exploded:[3D] Exploded View, top_engraved:[3D] Top Faceplate with Engraving, helmholtz_3d:[3D] Speaker & Helmholtz Stack, helmholtz_3d_exploded:[3D] Exploded Speaker & Helmholtz Stack, internals:[3D] FM-1 Electronics Only, speaker:[3D] Speaker Driver Only, screen_frame_3d:[3D] Wooden Screen Frame, pcb_support_3d:[3D] PCB Support Wedge, layout:[2D] Complete Laser Layout Sheet, top:[2D Panel] Top Faceplate, bottom:[2D Panel] Bottom Panel, left:[2D Panel] Left Cheek Panel, right:[2D Panel] Right Cheek Panel, front:[2D Panel] Front Panel, back:[2D Panel] Back Panel, screen_frame:[2D Addon] Thin Wooden Screen Frame, screen_window:[2D Addon] Clear Screen Window Insert, pcb_support:[2D Addon] PCB Keyboard Support Rail, slider:[2D Addon] Power Switch Slider, helmholtz_laser:[2D Addon] Helmholtz Resonator Stack, stepped_clamp:[2D Addon] Stepped Clamp Layers, speaker_ring:[2D Addon] Speaker Retainer Ring, helmholtz_pod:[STL] Helmholtz Resonator Pod, spider_clamp:[STL] Spider Clamp Bridge]
+/* [Display & View Selection] */
+// What to display or export
+part_to_show = "assembly"; // [assembly:3D - Full Case Assembly, exploded:3D - Exploded View, top_engraved:3D - Faceplate with Engraving & Frame, helmholtz_3d:3D - Speaker & Helmholtz Stack, internals:3D - FM-1 Electronics Only, layout:2D - Complete Laser Layout Sheet, top:2D Panel - Top Faceplate, bottom:2D Panel - Bottom Panel, left:2D Panel - Left Cheek, right:2D Panel - Right Cheek, front:2D Panel - Front Panel, back:2D Panel - Back Panel, screen_frame:2D Part - Wooden Screen Frame, screen_window:2D Part - Clear Screen Window, pcb_support:2D Part - PCB Support Rail, slider:2D Part - Power Switch Slider, helmholtz_laser:2D Part - Helmholtz Resonator Stack, stepped_clamp:2D Part - Stepped Retainer Clamp, pcb_support_3d:3D Print - PCB Support Wedge (STL), helmholtz_pod:3D Print - Helmholtz Resonator Pod (STL), spider_clamp:3D Print - Spider Clamp Bridge (STL)]
 
 // Show the 3D FM-1 PCB, silicone pads, encoders, screen & battery inside the case
 show_internals = true;
@@ -206,15 +191,7 @@ module __customizer_limit__() {}
 /* [Hidden] */
 $fn = 48;
 
-// Resolve what part/assembly to render from sub-topics or direct selector
-effective_part = 
-    (part_to_show != "auto" && part_to_show != "") ? part_to_show :
-    (view_category == "3d_views")          ? show_3d :
-    (view_category == "laser_sheet")        ? "layout" :
-    (view_category == "case_panels")        ? show_panel :
-    (view_category == "laser_accessories")   ? show_laser_addon :
-    (view_category == "stl_parts")          ? ((show_stl == "pcb_support_wedge") ? "pcb_support_3d" : show_stl) :
-    show_3d;
+effective_part = part_to_show;
 
 // Fixed mounting orientation & legacy compatibility flags
 speaker_mount = "bottom_panel";
