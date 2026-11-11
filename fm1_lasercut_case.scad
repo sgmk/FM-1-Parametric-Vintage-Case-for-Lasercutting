@@ -108,6 +108,16 @@ enable_frontplate_engraving = true;
 // Relative or absolute path to the SVG vector engraving artwork
 engraving_svg_file = "laserfiles/fm1_frontplate_engraving.svg";
 
+/* [PCB Lower Keyboard Support (Anti-Wiggle Standoff)] */
+// Under-PCB support to prevent the PCB from flexing when pressing keyboard buttons
+pcb_lower_support = "laser_rail"; // ["laser_rail", "3d_wedge", "none"]
+// Add bottom tabs on the rail into matching mortise slots in the Bottom Panel
+pcb_support_rail_tabs = true;
+// Width of the support rail in mm (covers the 27-key keyboard span)
+pcb_support_width = 144.0; // [50.0:1.0:160.0]
+// Y position on the PCB (in mm, 4.5mm is in the bare front margin of the PCB)
+pcb_support_y_pcb = 4.5;   // [3.0:0.5:15.0]
+
 /* [Vintage Side Panels (Cheeks)] */
 // Extend the side panels past the main box (creates a vintage synth lip and overhang)
 cheek_extension = 7.0; // [0.0:0.5:25.0]
@@ -139,7 +149,7 @@ kerf = 0.08; // [0.0:0.01:0.4]
 
 /* [Display Mode] */
 // What to render
-part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, top_engraved:Top Faceplate with Engraving (3D/2D), helmholtz_3d:Dedicated 3D Speaker & Laser Helmholtz Duct View, helmholtz_3d_exploded:Dedicated 3D Exploded Speaker & Duct Stack, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), helmholtz_laser:Laser-Cut Helmholtz Resonator Parts (2D), stepped_clamp:Laser-Cut 2-Layer Stepped Clamp (2D), speaker_ring:Laser-Cut Speaker Retainer Ring (2D), helmholtz_pod:3D-Printed Helmholtz Resonator Tub (3D STL), spider_clamp:3D-Printed Spider Clamp Bridge (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
+part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, top_engraved:Top Faceplate with Engraving (3D/2D), pcb_support:Laser-Cut PCB Support Rail (2D), pcb_support_3d:3D-Printable PCB Support Wedge (3D STL), helmholtz_3d:Dedicated 3D Speaker & Laser Helmholtz Duct View, helmholtz_3d_exploded:Dedicated 3D Exploded Speaker & Duct Stack, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), helmholtz_laser:Laser-Cut Helmholtz Resonator Parts (2D), stepped_clamp:Laser-Cut 2-Layer Stepped Clamp (2D), speaker_ring:Laser-Cut Speaker Retainer Ring (2D), helmholtz_pod:3D-Printed Helmholtz Resonator Tub (3D STL), spider_clamp:3D-Printed Spider Clamp Bridge (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
 
 // Show the 3D FM-1 PCB, silicone pads, encoders, screen & battery inside the case
 show_internals = true;
@@ -302,6 +312,16 @@ PORT_ZONE_X_MAX = fm1_ofs_x + 82.0;
 // Function to check if a back-edge finger tab [x0, x1] overlaps the rear port zone
 function overlaps_port_zone(x0, x1) =
     (x1 > PORT_ZONE_X_MIN) && (x0 < PORT_ZONE_X_MAX);
+
+// Lower PCB Support Calculations (supports the suspended front edge of the PCB)
+pcb_rail_y_loc   = fm1_ofs_y + pcb_support_y_pcb;
+pcb_rail_z_bot   = PCB_TOP_Z_LOCAL - 1.6;
+pcb_rail_y_box   = T + pcb_rail_y_loc * cos(panel_tilt) - pcb_rail_z_bot * sin(panel_tilt);
+pcb_rail_h       = case_internal_height + pcb_rail_y_loc * sin(panel_tilt) + pcb_rail_z_bot * cos(panel_tilt);
+pcb_rail_front_d = pcb_rail_y_box - T;
+pcb_rail_x_start = Ts + fm1_ofs_x + 6.0;
+pcb_rail_tabs_x  = [20.0, pcb_support_width / 2, pcb_support_width - 20.0];
+pcb_rail_tab_w   = 12.0;
 
 // Project rear jack & switch vertical heights onto the Back Panel
 pcb_rear_y_local      = fm1_ofs_y + PORT_FACE_Y_FM1;
@@ -954,6 +974,57 @@ module fm1_pinwheel_grille_2d(grille_dia = 43.0) {
 }
 
 // ==============================================================================
+// 7. Lower PCB Keyboard Support Rail & 3D Wedge
+// ==============================================================================
+// Supports the lower front edge of the PCB from underneath so keyboard buttons never flex or wiggle!
+module pcb_support_rail_2d() {
+    w     = pcb_support_width;
+    h     = pcb_rail_h;
+    tab_w = pcb_rail_tab_w;
+    tab_h = T;
+
+    offset_kerf() {
+        difference() {
+            union() {
+                // Main upright support rail
+                square([w, h]);
+
+                // Bottom mortise-and-tenon tabs into matching slots in the Bottom Panel
+                if (pcb_support_rail_tabs) {
+                    for (tx = pcb_rail_tabs_x) {
+                        translate([tx - tab_w / 2, -tab_h])
+                            square([tab_w, tab_h + 0.1]);
+                    }
+                }
+            }
+
+            // Wire clearance notch in upper edge (at X = 24..46mm for battery/speaker leads)
+            translate([24.0, h - 3.5])
+                rounded_square_2d([22.0, 5.0], 1.5);
+        }
+    }
+}
+
+// 3D-Printable Solid Support Wedge (rests on Bottom Panel & Front Wall, ramps up to PCB underside)
+module pcb_support_wedge_3d() {
+    w = pcb_support_width;
+    d = pcb_rail_front_d + 3.0; // Spans from inside of Front Wall to 3mm behind rail centerline
+    h_front = pcb_rail_h - pcb_rail_front_d * tan(panel_tilt);
+    h_back  = pcb_rail_h + 3.0 * tan(panel_tilt);
+
+    poly_pts = [
+        [0, 0],
+        [d, 0],
+        [d, h_back],
+        [0, h_front]
+    ];
+
+    rotate([90, 0, 90])
+        linear_extrude(w)
+            polygon(poly_pts);
+}
+
+// ==============================================================================
 // 2D Panel Modules
 // ==============================================================================
 
@@ -1069,6 +1140,14 @@ module bottom_panel() {
                 translate([spk_box_x, spk_box_y]) {
                     helmholtz_ring_ear_holes_2d();
                     helmholtz_tunnel_ear_hole_2d(port_x_end, wall_w);
+                }
+            }
+
+            // Mortise Slots for Lower PCB Keyboard Support Rail
+            if (pcb_lower_support == "laser_rail" && pcb_support_rail_tabs) {
+                for (tx = pcb_rail_tabs_x) {
+                    translate([pcb_rail_x_start + tx - pcb_rail_tab_w / 2, pcb_rail_y_box - T / 2])
+                        square([pcb_rail_tab_w, T]);
                 }
             }
         }
@@ -1477,6 +1556,19 @@ module assembly(explode = 0.0) {
             rotate([90, 0, 0])
                 linear_extrude(T)
                     back_panel();
+
+    // 8. Lower PCB Keyboard Support Rail / Wedge (supports the PCB front edge under keyboard)
+    if (pcb_lower_support == "laser_rail") {
+        color("#8d6e63", assembly_opacity)
+            translate([pcb_rail_x_start, pcb_rail_y_box + T/2, T])
+                rotate([90, 0, 0])
+                    linear_extrude(T)
+                        pcb_support_rail_2d();
+    } else if (pcb_lower_support == "3d_wedge") {
+        color("#546e7a", assembly_opacity)
+            translate([pcb_rail_x_start, T, T])
+                pcb_support_wedge_3d();
+    }
 }
 
 // ==============================================================================
@@ -1530,6 +1622,13 @@ module layout() {
             translate([2 * ow + 2 * Ts + 2 * spacing + 45, row3_y + eff_spk_dia/2 + 6])
                 speaker_retainer_ring_2d();
         }
+    }
+
+    // Row 4: Lower PCB Keyboard Support Rail
+    if (pcb_lower_support == "laser_rail") {
+        row4_y = row3_y + case_internal_height + spacing + T + 5;
+        translate([Ts, row4_y])
+            pcb_support_rail_2d();
     }
 }
 
@@ -1669,6 +1768,10 @@ if (part_to_show == "assembly") {
     assembly(explode = explode_distance);
 } else if (part_to_show == "top_engraved") {
     top_panel_engraved_view();
+} else if (part_to_show == "pcb_support") {
+    pcb_support_rail_2d();
+} else if (part_to_show == "pcb_support_3d") {
+    pcb_support_wedge_3d();
 } else if (part_to_show == "helmholtz_3d") {
     speaker_helmholtz_3d_view(explode = 0.0);
 } else if (part_to_show == "helmholtz_3d_exploded") {
