@@ -9,6 +9,34 @@
 
 use <fm1_pcb_and_silicone.scad>
 
+/* [Display Mode & View Selection] */
+// Top-level category (selects which sub-topic to display)
+view_category = "3d_views"; // [3d_views:1. 3D Assemblies & Exploded Views, laser_sheet:2. 2D Full Laser Cut Layout Sheet, case_panels:3. 2D Case Box Panels, laser_accessories:4. 2D Laser Accessories & Addons, stl_parts:5. 3D Printable STL Models, all_parts:6. Direct List (All Parts)]
+
+// [Sub-Topic: 3D Assemblies & Views] (active when view_category = "3d_views")
+show_3d = "assembly"; // [assembly:Full Case Assembly, exploded:Exploded Case View, top_engraved:Top Faceplate with Engraving & Frame, helmholtz_3d:Speaker & Helmholtz Stack, helmholtz_3d_exploded:Exploded Speaker & Helmholtz Stack, screen_frame_3d:Wooden Screen Frame & Window, pcb_support_3d:PCB Support Wedge, internals:FM-1 Electronics Only, speaker:Speaker Driver Only]
+
+// [Sub-Topic: 2D Case Box Panels] (active when view_category = "case_panels")
+show_panel = "top"; // [top:Top Faceplate, bottom:Bottom Panel, left:Left Cheek Panel, right:Right Cheek Panel, front:Front Panel, back:Back Panel]
+
+// [Sub-Topic: 2D Laser Accessories & Addons] (active when view_category = "laser_accessories")
+show_laser_addon = "screen_frame"; // [screen_frame:Thin Wooden Screen Frame, screen_window:Clear Screen Window Insert, pcb_support:PCB Keyboard Support Rail, slider:Power Switch Slider, helmholtz_laser:Helmholtz Resonator Wood Stack, stepped_clamp:2-Layer Stepped Retainer Clamp, speaker_ring:Speaker Retainer Ring]
+
+// [Sub-Topic: 3D Printable STL Models] (active when view_category = "stl_parts")
+show_stl = "pcb_support_wedge"; // [pcb_support_wedge:PCB Keyboard Support Wedge, helmholtz_pod:Helmholtz Resonator Tub Pod, spider_clamp:Speaker Spider Clamp Bridge]
+
+// Direct flat list selector (set to "auto" to use sub-topics above)
+part_to_show = "auto"; // [auto:Automatic (from sub-topics above), assembly:[3D] Full Case Assembly, exploded:[3D] Exploded View, top_engraved:[3D] Top Faceplate with Engraving, helmholtz_3d:[3D] Speaker & Helmholtz Stack, helmholtz_3d_exploded:[3D] Exploded Speaker & Helmholtz Stack, internals:[3D] FM-1 Electronics Only, speaker:[3D] Speaker Driver Only, screen_frame_3d:[3D] Wooden Screen Frame, pcb_support_3d:[3D] PCB Support Wedge, layout:[2D] Complete Laser Layout Sheet, top:[2D Panel] Top Faceplate, bottom:[2D Panel] Bottom Panel, left:[2D Panel] Left Cheek Panel, right:[2D Panel] Right Cheek Panel, front:[2D Panel] Front Panel, back:[2D Panel] Back Panel, screen_frame:[2D Addon] Thin Wooden Screen Frame, screen_window:[2D Addon] Clear Screen Window Insert, pcb_support:[2D Addon] PCB Keyboard Support Rail, slider:[2D Addon] Power Switch Slider, helmholtz_laser:[2D Addon] Helmholtz Resonator Stack, stepped_clamp:[2D Addon] Stepped Clamp Layers, speaker_ring:[2D Addon] Speaker Retainer Ring, helmholtz_pod:[STL] Helmholtz Resonator Pod, spider_clamp:[STL] Spider Clamp Bridge]
+
+// Show the 3D FM-1 PCB, silicone pads, encoders, screen & battery inside the case
+show_internals = true;
+
+// Float or explode distance in 3D views (mm)
+explode_distance = 30.0; // [0.0:2.0:120.0]
+
+// Opacity of the case panels in 3D view
+assembly_opacity = 0.55; // [0.15:0.05:1.0]
+
 /* [Case Dimensions & Tilt] */
 // Internal width of the case (X) in mm (FM-1 PCB is 156.5mm wide; 162mm is minimum tight fit)
 case_width = 170.0; // [160.0:1.0:260.0]
@@ -172,24 +200,21 @@ notch_length = 30.0; // [8.0:1.0:50.0]
 // Laser kerf compensation in mm (positive values widen tabs for a tighter fit)
 kerf = 0.08; // [0.0:0.01:0.4]
 
-/* [Display Mode] */
-// What to render
-part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, top_engraved:Top Faceplate with Engraving (3D/2D), screen_frame:Laser-Cut Thin Wooden Screen Frame (2D), screen_frame_3d:Thin Wooden Screen Frame with Window (3D STL), screen_window:Laser-Cut Clear Screen Window Insert (2D), pcb_support:Laser-Cut PCB Support Rail (2D), pcb_support_3d:3D-Printable PCB Support Wedge (3D STL), helmholtz_3d:Dedicated 3D Speaker & Laser Helmholtz Duct View, helmholtz_3d_exploded:Dedicated 3D Exploded Speaker & Duct Stack, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), helmholtz_laser:Laser-Cut Helmholtz Resonator Parts (2D), stepped_clamp:Laser-Cut 2-Layer Stepped Clamp (2D), speaker_ring:Laser-Cut Speaker Retainer Ring (2D), helmholtz_pod:3D-Printed Helmholtz Resonator Tub (3D STL), spider_clamp:3D-Printed Spider Clamp Bridge (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
-
-// Show the 3D FM-1 PCB, silicone pads, encoders, screen & battery inside the case
-show_internals = true;
-
-// Float or explode distance in 3D views (mm)
-explode_distance = 30.0; // [0.0:2.0:120.0]
-
-// Opacity of the case panels in 3D view
-assembly_opacity = 0.55; // [0.15:0.05:1.0]
-
 // Stop OpenSCAD Customizer parameter scanning here so internal constants are never exported to JSON
 module __customizer_limit__() {}
 
 /* [Hidden] */
 $fn = 48;
+
+// Resolve what part/assembly to render from sub-topics or direct selector
+effective_part = 
+    (part_to_show != "auto" && part_to_show != "") ? part_to_show :
+    (view_category == "3d_views")          ? show_3d :
+    (view_category == "laser_sheet")        ? "layout" :
+    (view_category == "case_panels")        ? show_panel :
+    (view_category == "laser_accessories")   ? show_laser_addon :
+    (view_category == "stl_parts")          ? ((show_stl == "pcb_support_wedge") ? "pcb_support_3d" : show_stl) :
+    show_3d;
 
 // Fixed mounting orientation & legacy compatibility flags
 speaker_mount = "bottom_panel";
@@ -1893,46 +1918,46 @@ module top_panel_engraved_view() {
 // ==============================================================================
 // Main Render Controller
 // ==============================================================================
-if (part_to_show == "assembly") {
+if (effective_part == "assembly") {
     assembly(explode = 0.0);
-} else if (part_to_show == "exploded") {
+} else if (effective_part == "exploded") {
     assembly(explode = explode_distance);
-} else if (part_to_show == "top_engraved") {
+} else if (effective_part == "top_engraved") {
     top_panel_engraved_view();
-} else if (part_to_show == "screen_frame") {
+} else if (effective_part == "screen_frame") {
     screen_frame_2d();
     if (screen_frame_engrave) {
         #screen_frame_engraving_2d();
     }
-} else if (part_to_show == "screen_frame_3d") {
+} else if (effective_part == "screen_frame_3d") {
     screen_frame_3d();
-} else if (part_to_show == "screen_window") {
+} else if (effective_part == "screen_window") {
     screen_window_insert_2d();
-} else if (part_to_show == "pcb_support") {
+} else if (effective_part == "pcb_support") {
     pcb_support_rail_2d();
-} else if (part_to_show == "pcb_support_3d") {
+} else if (effective_part == "pcb_support_3d" || effective_part == "pcb_support_wedge") {
     pcb_support_wedge_3d();
-} else if (part_to_show == "helmholtz_3d") {
+} else if (effective_part == "helmholtz_3d") {
     speaker_helmholtz_3d_view(explode = 0.0);
-} else if (part_to_show == "helmholtz_3d_exploded") {
+} else if (effective_part == "helmholtz_3d_exploded") {
     speaker_helmholtz_3d_view(explode = max(8.0, explode_distance));
-} else if (part_to_show == "layout") {
+} else if (effective_part == "layout") {
     layout();
-} else if (part_to_show == "top") {
+} else if (effective_part == "top") {
     top_panel();
-} else if (part_to_show == "bottom") {
+} else if (effective_part == "bottom") {
     bottom_panel();
-} else if (part_to_show == "left") {
+} else if (effective_part == "left") {
     left_panel();
-} else if (part_to_show == "right") {
+} else if (effective_part == "right") {
     mirror([1, 0]) right_panel();
-} else if (part_to_show == "front") {
+} else if (effective_part == "front") {
     front_panel();
-} else if (part_to_show == "back") {
+} else if (effective_part == "back") {
     back_panel();
-} else if (part_to_show == "slider") {
+} else if (effective_part == "slider") {
     power_switch_slider_2d();
-} else if (part_to_show == "acoustic_mount") {
+} else if (effective_part == "acoustic_mount") {
     if (resonator_type == "spider_clamp_3d") {
         speaker_spider_clamp_3d();
     } else if (resonator_type == "stepped_clamp_laser") {
@@ -1944,17 +1969,17 @@ if (part_to_show == "assembly") {
     } else {
         speaker_retainer_ring_2d();
     }
-} else if (part_to_show == "helmholtz_laser") {
+} else if (effective_part == "helmholtz_laser") {
     helmholtz_laser_parts_2d();
-} else if (part_to_show == "stepped_clamp") {
+} else if (effective_part == "stepped_clamp") {
     stepped_clamp_laser_layers_2d();
-} else if (part_to_show == "speaker_ring") {
+} else if (effective_part == "speaker_ring") {
     speaker_retainer_ring_2d();
-} else if (part_to_show == "helmholtz_pod") {
+} else if (effective_part == "helmholtz_pod") {
     helmholtz_3d_pod_model();
-} else if (part_to_show == "spider_clamp") {
+} else if (effective_part == "spider_clamp") {
     speaker_spider_clamp_3d();
-} else if (part_to_show == "speaker") {
+} else if (effective_part == "speaker") {
     if (speaker_type == "aliexpress_40mm") {
         fm1_aliexpress_40mm_speaker_3d(
             outer_dia = eff_spk_dia,
@@ -1972,6 +1997,6 @@ if (part_to_show == "assembly") {
             face_down  = false
         );
     }
-} else if (part_to_show == "internals") {
+} else if (effective_part == "internals") {
     fm1_internals_assembly(explode_silicone = 0.0, include_speaker = true);
 }
