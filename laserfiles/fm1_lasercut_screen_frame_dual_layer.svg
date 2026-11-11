@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="90mm" height="45mm" viewBox="-2 -2 90 45" xmlns="http://www.w3.org/2000/svg">
+  <title>M-VAVE FM-1 Laser-Cut Wooden Screen Frame &amp; Clear Protector</title>
+  <desc>
+    RED = Laser Cut Lines (0.05mm hairline)
+    BLUE = Decorative Vector Engrave / Score Line
+    LEFT = Thin Wood / Veneer Frame (37.4 x 37.4mm with 28 x 28mm LCD window)
+    RIGHT = Optional 0.5-0.8mm Clear Acrylic Protector Sheet
+  </desc>
+  <g id="engraving_lines" stroke="#0000ff" stroke-width="0.15" fill="none">
+    <path d="M 3.200,1.600 L 34.200,1.600 A 1.600,1.600 0 0 1 35.800,3.200 L 35.800,34.200 A 1.600,1.600 0 0 1 34.200,35.800 L 3.200,35.800 A 1.600,1.600 0 0 1 1.600,34.200 L 1.600,3.200 A 1.600,1.600 0 0 1 3.200,1.600 Z" />
+  </g>
+  <g id="cut_lines" stroke="#ff0000" stroke-width="0.10" fill="none">
+    <!-- Wooden frame outer and inner cutouts -->
+    <path d="M 3.200,0.000 L 34.200,0.000 A 3.200,3.200 0 0 1 37.400,3.200 L 37.400,34.200 A 3.200,3.200 0 0 1 34.200,37.400 L 3.200,37.400 A 3.200,3.200 0 0 1 0.000,34.200 L 0.000,3.200 A 3.200,3.200 0 0 1 3.200,0.000 Z" />
+    <path d="M 5.700,4.700 L 31.700,4.700 A 1.000,1.000 0 0 1 32.700,5.700 L 32.700,31.700 A 1.000,1.000 0 0 1 31.700,32.700 L 5.700,32.700 A 1.000,1.000 0 0 1 4.700,31.700 L 4.700,5.700 A 1.000,1.000 0 0 1 5.700,4.700 Z" />
+    <!-- Clear acrylic insert cutout -->
+    <path d="M 50.600,0.000 L 81.600,0.000 A 3.200,3.200 0 0 1 84.800,3.200 L 84.800,34.200 A 3.200,3.200 0 0 1 81.600,37.400 L 50.600,37.400 A 3.200,3.200 0 0 1 47.400,34.200 L 47.400,3.200 A 3.200,3.200 0 0 1 50.600,0.000 Z" />
+  </g>
+</svg>

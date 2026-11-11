@@ -93,7 +93,7 @@ helmholtz_port_length = 56.0; // [20.0:1.0:80.0]
 helmholtz_screw_ears = true;
 
 /* [Screen Mount & Bezel Options] */
-// Screen cutout style: "bare_screen" cuts hole for LCD module only (plastic cover sits on top of wood); "full_bezel" cuts hole for whole 37.5mm cover flush
+// Screen cutout style: "bare_screen" cuts hole for LCD module only (bezel frame sits on top of wood); "full_bezel" cuts hole for whole 37.5mm cover flush
 screen_mount_style = "bare_screen"; // ["bare_screen", "full_bezel"]
 // Width of the bare LCD module opening in mm (standard 1.54" TFT module is ~31.5 - 32.0mm)
 screen_bare_w = 32.0; // [28.0:0.1:37.0]
@@ -101,6 +101,31 @@ screen_bare_w = 32.0; // [28.0:0.1:37.0]
 screen_bare_h = 34.5; // [28.0:0.1:37.0]
 // Corner radius of the screen cutout in mm
 screen_bare_r = 1.5;  // [0.0:0.5:4.0]
+
+// Bezel frame style placed over the screen: custom laser-cut wood frame, stock black plastic, or none
+screen_frame_style = "wood_frame"; // ["wood_frame", "original_plastic", "none"]
+// Thickness of the thin wooden screen frame in mm
+screen_frame_thickness = 1.0; // [0.4:0.1:4.0]
+// Outer width of the wooden screen frame in mm
+screen_frame_w = 37.4; // [30.0:0.1:45.0]
+// Outer height of the wooden screen frame in mm
+screen_frame_h = 37.4; // [30.0:0.1:45.0]
+// Outer corner radius of the wooden screen frame in mm
+screen_frame_r = 3.2;  // [0.0:0.2:8.0]
+// Inner viewing window width in mm (active LCD is 27.2mm)
+screen_frame_window_w = 28.0; // [24.0:0.1:34.0]
+// Inner viewing window height in mm (active LCD is 27.4mm)
+screen_frame_window_h = 28.0; // [24.0:0.1:34.0]
+// Inner viewing window corner radius in mm
+screen_frame_window_r = 1.0;  // [0.0:0.2:4.0]
+// Add decorative laser-engraved accent border line on the wooden frame
+screen_frame_engrave = true;
+// Render clear transparent acrylic/glass protector insert in 3D
+screen_frame_clear_insert = true;
+// Thickness of clear acrylic protector insert in mm
+screen_window_thickness = 0.8; // [0.4:0.1:2.0]
+// Include the thin wooden screen frame in the 2D layout sheet
+include_screen_frame_in_layout = true;
 
 /* [Frontplate Laser Engraving] */
 // Enable laser engraving artwork on the top faceplate from an SVG file
@@ -149,7 +174,7 @@ kerf = 0.08; // [0.0:0.01:0.4]
 
 /* [Display Mode] */
 // What to render
-part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, top_engraved:Top Faceplate with Engraving (3D/2D), pcb_support:Laser-Cut PCB Support Rail (2D), pcb_support_3d:3D-Printable PCB Support Wedge (3D STL), helmholtz_3d:Dedicated 3D Speaker & Laser Helmholtz Duct View, helmholtz_3d_exploded:Dedicated 3D Exploded Speaker & Duct Stack, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), helmholtz_laser:Laser-Cut Helmholtz Resonator Parts (2D), stepped_clamp:Laser-Cut 2-Layer Stepped Clamp (2D), speaker_ring:Laser-Cut Speaker Retainer Ring (2D), helmholtz_pod:3D-Printed Helmholtz Resonator Tub (3D STL), spider_clamp:3D-Printed Spider Clamp Bridge (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
+part_to_show = "assembly"; // [assembly:3D Assembly, exploded:3D Exploded View, top_engraved:Top Faceplate with Engraving (3D/2D), screen_frame:Laser-Cut Thin Wooden Screen Frame (2D), screen_frame_3d:Thin Wooden Screen Frame with Window (3D STL), screen_window:Laser-Cut Clear Screen Window Insert (2D), pcb_support:Laser-Cut PCB Support Rail (2D), pcb_support_3d:3D-Printable PCB Support Wedge (3D STL), helmholtz_3d:Dedicated 3D Speaker & Laser Helmholtz Duct View, helmholtz_3d_exploded:Dedicated 3D Exploded Speaker & Duct Stack, layout:2D Laser Cut Layout, top:Top Faceplate (2D), bottom:Bottom Panel (2D), left:Left Cheek Panel (2D), right:Right Cheek Panel (2D), front:Front Panel (2D), back:Back Panel (2D), slider:Power Switch Slider (2D), helmholtz_laser:Laser-Cut Helmholtz Resonator Parts (2D), stepped_clamp:Laser-Cut 2-Layer Stepped Clamp (2D), speaker_ring:Laser-Cut Speaker Retainer Ring (2D), helmholtz_pod:3D-Printed Helmholtz Resonator Tub (3D STL), spider_clamp:3D-Printed Spider Clamp Bridge (3D STL), speaker:Speaker Driver Only (3D), internals:FM-1 Internals Only (3D)]
 
 // Show the 3D FM-1 PCB, silicone pads, encoders, screen & battery inside the case
 show_internals = true;
@@ -1025,6 +1050,86 @@ module pcb_support_wedge_3d() {
 }
 
 // ==============================================================================
+// 8. Laser-Cut Thin Wooden Screen Frame & Clear Window Insert
+// ==============================================================================
+module screen_frame_2d(center_xy = false) {
+    w     = screen_frame_w;
+    h     = screen_frame_h;
+    win_w = screen_frame_window_w;
+    win_h = screen_frame_window_h;
+    r_out = screen_frame_r;
+    r_in  = screen_frame_window_r;
+
+    translate(center_xy ? [-w/2, -h/2] : [0, 0]) {
+        offset_kerf() {
+            difference() {
+                // Outer bezel frame
+                rounded_square_2d([w, h], r_out);
+
+                // Inner LCD viewing window cutout
+                translate([(w - win_w)/2, (h - win_h)/2])
+                    rounded_square_2d([win_w, win_h], r_in);
+            }
+        }
+    }
+}
+
+// Decorative engraving outline on the wooden screen frame
+module screen_frame_engraving_2d(center_xy = false) {
+    w     = screen_frame_w;
+    h     = screen_frame_h;
+    r_out = screen_frame_r;
+    inset = 1.6;
+    line_w = 0.45;
+
+    translate(center_xy ? [-w/2, -h/2] : [0, 0]) {
+        difference() {
+            translate([inset, inset])
+                rounded_square_2d([w - 2*inset, h - 2*inset], max(0.5, r_out - inset));
+            translate([inset + line_w, inset + line_w])
+                rounded_square_2d([w - 2*(inset + line_w), h - 2*(inset + line_w)], max(0.2, r_out - inset - line_w));
+        }
+    }
+}
+
+// Laser-cut transparent plastic / acrylic protector sheet
+module screen_window_insert_2d(center_xy = false) {
+    w = screen_frame_w;
+    h = screen_frame_h;
+    r = screen_frame_r;
+
+    translate(center_xy ? [-w/2, -h/2] : [0, 0])
+        offset_kerf()
+            rounded_square_2d([w, h], r);
+}
+
+// 3D Assembly of Wooden Frame + Optional Clear Insert + Engraving
+module screen_frame_3d() {
+    // Clear acrylic protector insert (sits flush underneath the wooden frame)
+    if (screen_frame_clear_insert) {
+        color([0.85, 0.94, 0.98, 0.50])
+            translate([0, 0, 0])
+                linear_extrude(screen_window_thickness)
+                    screen_window_insert_2d(center_xy = true);
+    }
+
+    // Thin wooden frame
+    wood_z = screen_frame_clear_insert ? screen_window_thickness : 0;
+    color("#b89778")
+        translate([0, 0, wood_z])
+            linear_extrude(screen_frame_thickness)
+                screen_frame_2d(center_xy = true);
+
+    // Decorative engraving groove on the wooden surface
+    if (screen_frame_engrave) {
+        color("#4e342e")
+            translate([0, 0, wood_z + screen_frame_thickness + 0.02])
+                linear_extrude(0.08)
+                    screen_frame_engraving_2d(center_xy = true);
+    }
+}
+
+// ==============================================================================
 // 2D Panel Modules
 // ==============================================================================
 
@@ -1520,11 +1625,16 @@ module assembly(explode = 0.0) {
                             import(engraving_svg_file);
             }
 
-            // Plastic Screen Cover (resting on top of the wood faceplate when in bare_screen mode)
+            // Screen Bezel Cover (resting on top of the wood faceplate when in bare_screen mode)
             if (show_internals && screen_mount_style == "bare_screen") {
-                color([0.10, 0.10, 0.12, 0.85])
-                    translate([fm1_ofs_x + SCREEN_CX, fm1_ofs_y + SCREEN_CY, 0.10 + explode * 1.1])
-                        rrect_3d(SCREEN_BEZEL_W, SCREEN_BEZEL_H, 0.8, 3.2, center_xy = true);
+                if (screen_frame_style == "wood_frame") {
+                    translate([fm1_ofs_x + SCREEN_CX, fm1_ofs_y + SCREEN_CY, 0.05 + explode * 1.1])
+                        screen_frame_3d();
+                } else if (screen_frame_style == "original_plastic") {
+                    color([0.10, 0.10, 0.12, 0.85])
+                        translate([fm1_ofs_x + SCREEN_CX, fm1_ofs_y + SCREEN_CY, 0.10 + explode * 1.1])
+                            rrect_3d(SCREEN_BEZEL_W, SCREEN_BEZEL_H, 0.8, 3.2, center_xy = true);
+                }
             }
         }
     }
@@ -1624,11 +1734,27 @@ module layout() {
         }
     }
 
-    // Row 4: Lower PCB Keyboard Support Rail
+    // Row 4: Lower PCB Keyboard Support Rail & Thin Wooden Screen Frame
+    row4_y = row3_y + case_internal_height + spacing + T + 5;
     if (pcb_lower_support == "laser_rail") {
-        row4_y = row3_y + case_internal_height + spacing + T + 5;
         translate([Ts, row4_y])
             pcb_support_rail_2d();
+
+        if (include_screen_frame_in_layout && screen_frame_style == "wood_frame") {
+            translate([Ts + pcb_support_width + spacing + 10, row4_y]) {
+                screen_frame_2d();
+                if (screen_frame_engrave) {
+                    #screen_frame_engraving_2d();
+                }
+            }
+        }
+    } else if (include_screen_frame_in_layout && screen_frame_style == "wood_frame") {
+        translate([Ts, row4_y]) {
+            screen_frame_2d();
+            if (screen_frame_engrave) {
+                #screen_frame_engraving_2d();
+            }
+        }
     }
 }
 
@@ -1740,7 +1866,7 @@ module speaker_helmholtz_3d_view(explode = 0.0) {
 }
 
 module top_panel_engraved_view() {
-    // 3D/2D Top Panel with laser engraving and top-mounted plastic screen cover
+    // 3D/2D Top Panel with laser engraving and top-mounted screen cover
     color("#cbb9a3")
         linear_extrude(T)
             top_panel();
@@ -1753,9 +1879,14 @@ module top_panel_engraved_view() {
     }
 
     if (screen_mount_style == "bare_screen") {
-        color([0.10, 0.10, 0.12, 0.85])
-            translate([fm1_ofs_x + SCREEN_CX, fm1_ofs_y + SCREEN_CY, T + 0.15])
-                rrect_3d(SCREEN_BEZEL_W, SCREEN_BEZEL_H, 0.8, 3.2, center_xy = true);
+        if (screen_frame_style == "wood_frame") {
+            translate([fm1_ofs_x + SCREEN_CX, fm1_ofs_y + SCREEN_CY, T + 0.02])
+                screen_frame_3d();
+        } else if (screen_frame_style == "original_plastic") {
+            color([0.10, 0.10, 0.12, 0.85])
+                translate([fm1_ofs_x + SCREEN_CX, fm1_ofs_y + SCREEN_CY, T + 0.15])
+                    rrect_3d(SCREEN_BEZEL_W, SCREEN_BEZEL_H, 0.8, 3.2, center_xy = true);
+        }
     }
 }
 
@@ -1768,6 +1899,15 @@ if (part_to_show == "assembly") {
     assembly(explode = explode_distance);
 } else if (part_to_show == "top_engraved") {
     top_panel_engraved_view();
+} else if (part_to_show == "screen_frame") {
+    screen_frame_2d();
+    if (screen_frame_engrave) {
+        #screen_frame_engraving_2d();
+    }
+} else if (part_to_show == "screen_frame_3d") {
+    screen_frame_3d();
+} else if (part_to_show == "screen_window") {
+    screen_window_insert_2d();
 } else if (part_to_show == "pcb_support") {
     pcb_support_rail_2d();
 } else if (part_to_show == "pcb_support_3d") {
