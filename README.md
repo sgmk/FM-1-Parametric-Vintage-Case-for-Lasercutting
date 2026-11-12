@@ -108,9 +108,13 @@ With the screen ribbon cable repaired and the 1.54" display mounted and running,
 
 The stock M-VAVE FM-1 houses a tiny $\varnothing 26.5 \times 4.2\,\text{mm}$ capsule ($0.5\,\text{W}$) that lacks low-end body. The vintage laser-cut enclosure unlocks a generous $\sim 0.38\,\text{L}$ cavity beneath the PCB, allowing a major acoustic upgrade to a full-range **$40 \times 22\,\text{mm}$ driver** ($4\Omega\,5\text{W}$, $\varnothing 23\,\text{mm}$ magnet pot) firing downward through a curved 8-arm pinwheel grille.
 
-| Chosen 40mm Driver | Assembled 6-Layer Laser Helmholtz Stack | Disassembled Laser-Cut Layers |
-| :---: | :---: | :---: |
-| ![40mm Driver](photos/speaker_40mm_aliexpress.png) | ![Assembled Laser Helmholtz Stack](photos/helmholtz_laser_cut_assembled.jpg) | ![Laser Cut Resonator Layers](photos/helmholtz_laser_cut_layers.jpg) |
+| Chosen 40mm Driver | OpenSCAD 3D Helmholtz Stack Model |
+| :---: | :---: |
+| ![40mm Driver](photos/speaker_40mm_aliexpress.png) | ![OpenSCAD 3D Helmholtz Stack Model](photos/helmholz_3d-design.png) |
+
+| Assembled 6-Layer Laser Helmholtz Stack | Disassembled Laser-Cut Layers |
+| :---: | :---: |
+| ![Assembled Laser Helmholtz Stack](photos/helmholtz_laser_cut_assembled.jpg) | ![Laser Cut Resonator Layers](photos/helmholtz_laser_cut_layers.jpg) |
 
 ### Two Primary Acoustic Approaches
 
