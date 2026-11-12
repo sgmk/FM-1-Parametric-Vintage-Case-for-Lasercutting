@@ -165,6 +165,23 @@ With the screen ribbon cable repaired and the 1.54" display mounted and running,
 
 ---
 
+## Known Issues & Future To-Do
+
+* [ ] **Acoustic Benchmarking & Real-World Sound Comparisons:**
+  * While the initial laser-cut Helmholtz duct has been assembled and tested in the prototype, it was glued under preliminary workbench conditions (imperfect layer-to-layer acoustic seal).
+  * Systematically measure and compare sound pressure level (SPL) and bass extension across different real-world acoustic configurations:
+    1. Stock `Ø26.5 mm` capsule in the original plastic shell.
+    2. Upgraded 40mm driver unbaffled inside the open wooden cabinet.
+    3. Fully sealed & M3-clamped 6-layer laser Helmholtz duct.
+    4. 3D-printed curved Helmholtz tub pod ([`helmholtz_3d_pod_model()`](fm1_lasercut_case.scad)).
+* [ ] **Improved Teardown Guide & Screen Extraction Method:**
+  * In the stock Cuvave enclosure, the 1.54" display is heavily glued into the orange front shell while tethered by a short, fragile ribbon cable to connector `J12`.
+  * Develop and document a reliable, repeatable release technique (e.g. gentle localized heat, isopropanol adhesive softening, or a 3D-printed extraction jig) so makers can extract the screen without risking snapping the black FPC latch or tearing the flat flex cable.
+* [ ] **Fully 3D-Printable Enclosure Fork:**
+  * Create a dedicated fork / variant of the vintage desktop case optimized specifically for FDM 3D printing (monolithic chassis with threaded inserts/screw bosses, print-in-place tolerances, integrated acoustic cavity, and curved vintage surfaces rather than 2D laser finger joints).
+
+---
+
 ## License
 
 This project is licensed under the **[Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)](LICENSE)**.
