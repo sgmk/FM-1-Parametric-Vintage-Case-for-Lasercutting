@@ -104,6 +104,35 @@ With the screen ribbon cable repaired and the 1.54" display mounted and running,
 
 ---
 
+## Acoustic Engineering & Speaker Resonator System
+
+The stock M-VAVE FM-1 houses a tiny $\varnothing 26.5 \times 4.2\,\text{mm}$ capsule ($0.5\,\text{W}$) that lacks low-end body. The vintage laser-cut enclosure unlocks a generous $\sim 0.38\,\text{L}$ cavity beneath the PCB, allowing a major acoustic upgrade to a full-range **$40 \times 22\,\text{mm}$ driver** ($4\Omega\,5\text{W}$, $\varnothing 23\,\text{mm}$ magnet pot) firing downward through a curved 8-arm pinwheel grille.
+
+| Chosen 40mm Driver | Assembled 6-Layer Laser Helmholtz Stack | Disassembled Laser-Cut Layers |
+| :---: | :---: | :---: |
+| ![40mm Driver](photos/speaker_40mm_aliexpress.png) | ![Assembled Laser Helmholtz Stack](photos/helmholtz_laser_cut_assembled.jpg) | ![Laser Cut Resonator Layers](photos/helmholtz_laser_cut_layers.jpg) |
+
+### Two Primary Acoustic Approaches
+
+1. **Aperiodic Variovent (Full-Case Damped Enclosure):**
+   * Uses the entire $\sim 0.38\,\text{L}$ internal volume beneath the PCB as a damped acoustic chamber.
+   * Rather than fighting parasitic air leaks around rear jacks and button margins, a loose pinch of polyfill/felt turns the enclosure into an aperiodic resistive damper ($Q_{tc} \approx 0.68$).
+   * Delivers clean, uncolored synth bass down to **$\sim 125\,\text{Hz}$** with zero port turbulence ("chuffing") and protects the cone from bottoming out on sub-audio clicks.
+
+2. **Tuned 6-Layer Laser-Cut Helmholtz Resonator Duct (`resonator_type = "helmholtz_laser_duct"`):**
+   * 100% laser-cut from $3\,\text{mm}$ plywood. Stacked wood rings cap the steel magnet pot airtight, while a $56\,\text{mm}$ rectangular duct ($25 \times 6\,\text{mm}$) tunes the back-wave cavity ($V_b \approx 0.15\,\text{L}$) to **$f_B \approx 210\,\text{Hz}$**, venting directly through an exit slot in the bottom panel.
+   * Clamped securely using long M3 machine screws (`helmholtz_screw_ears = true`) through integrated bolt ears to prevent chassis buzz and vibrations.
+   * A 3D-printable sealed tub pod ([`helmholtz_3d_pod_model()`](fm1_lasercut_case.scad)) is also available as an STL alternative.
+
+> [!TIP]
+> **Detailed Acoustic Documentation & Engineering Audits:**
+> * **[Beginner Visual Guide & Resonator Primer](docs/ACOUSTICS_AND_RESONATOR_PLAN.md)** — Step-by-step assembly guide, diagrams, and explanations.
+> * **[Peer-Review Engineering Audit & Debate](docs/PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md)** — Technical debate between Dr. Viktor Vance ("The Baffle Butcher") and the maker.
+> * **[Synth Journalist Feature Article](docs/SYNTH_JOURNALIST_EDITORIAL_OVERVIEW.md)** — Sound On Sound / CDM style deep dive into the acoustic transformation.
+> * **[Deep Engineering Math & Thiele-Small Nomographs](docs/ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md)** — Mathematical modeling, acoustic inertance, and differential equations.
+
+---
+
 ## OpenSCAD Files & Customizer Parameters
 
 * **[`fm1_lasercut_case.scad`](fm1_lasercut_case.scad)** — Main parametric laser-cut enclosure generator (3D assembly, exploded view, and 2D laser-cutting layout).
