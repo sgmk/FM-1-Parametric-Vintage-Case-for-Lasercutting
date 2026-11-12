@@ -145,22 +145,23 @@ With the screen ribbon cable repaired and the 1.54" display mounted and running,
 
 ---
 
-## Known Issues & To-Do
+## Recent Improvements & Hardware Milestones
 
-* [ ] **Refine Captive ON/OFF Switch Slider:**
-  * The tiny right-angle SMD slide switch (`J5`) sits on top of the PCB recessed behind the `3.0 mm` wooden back wall. Refine the captive slider mechanism ([`power_switch_slider_2d()`](fm1_lasercut_case.scad)) for ultra-smooth operation.
-* [x] **Screen Opening & Wooden Bezel Frame (`screen_mount_style = "bare_screen"`):**
-  * Redesigned the faceplate aperture for the bare 1.54" LCD glass module ($32.0 \times 34.5\,\text{mm}$), with the screen repaired and running. Added an optional laser-cut thin wooden bezel frame ([`laserfiles/fm1_lasercut_screen_frame.svg`](laserfiles/fm1_lasercut_screen_frame.svg)) and transparent acrylic shield.
-* [x] **Upgraded Speaker (`40 × 22 mm` or `50 × 31 mm`) + Aperiodic Variovent & Helmholtz Resonator Options:**
-  * Both speaker models (`fm1_aliexpress_40mm_speaker_3d` and `fm1_big_speaker_3d`), the scaled 8-arm curved pinwheel grille (`fm1_pinwheel_grille_2d`), the 3D Spider Bridge Clamp (`speaker_spider_clamp_3d`), the 2-layer laser-cut stepped clamp (`stepped_clamp_laser_layers_2d`), and the wide-body Helmholtz bass-reflex tub (`helmholtz_3d_pod_model`) are built into [`fm1_lasercut_case.scad`](fm1_lasercut_case.scad).
-  * **Synth Journalist Editorial Overview:** **[`docs/SYNTH_JOURNALIST_EDITORIAL_OVERVIEW.md`](docs/SYNTH_JOURNALIST_EDITORIAL_OVERVIEW.md)** — Feature article on the physical transformation, acoustic audit, aperiodic epiphany, and workbench sound test.
-  * **Peer-Review Engineering Audit & Debate:** **[`docs/PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md`](docs/PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md)** — Critical dialogue between Dr. Viktor Vance ("The Baffle Butcher") and Maker / Synth Geek.
-  * **Beginner Visual Guide & Build Instructions:** **[`docs/ACOUSTICS_AND_RESONATOR_PLAN.md`](docs/ACOUSTICS_AND_RESONATOR_PLAN.md)**
-  * **Deep Engineering Math, Thiele-Small Tables & Nomographs:** **[`docs/ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md`](docs/ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md)**
-* [x] **Frontplate Laser Engraving:**
-  * Vector SVG engraving artwork ([`laserfiles/fm1_frontplate_engraving.svg`](laserfiles/fm1_frontplate_engraving.svg)) covering all 8 rotary encoder labels, dial graduations, FM-1 branding badges, and alignment guides.
-* [x] **Under-PCB Keyboard Support Rail:**
-  * Laser-cut upright support rail (`pcb_lower_support = "laser_rail"`) with mortise-and-tenon tabs locking into the bottom panel eliminates front PCB flex when playing keys.
+* **Functional Captive ON/OFF Slider:**
+  * The captive laser-cut slider mechanism ([`power_switch_slider_2d()`](fm1_lasercut_case.scad)) successfully engages and toggles the recessed right-angle SMD power switch from the rear wall. A light sanding/grinding ensures a smooth, low-friction sliding fit.
+* **Screen Aperture & Custom Wooden Bezel:**
+  * Redesigned the faceplate opening (`screen_mount_style = "bare_screen"`) to precisely frame the bare 1.54" LCD module ($32.0 \times 34.5\,\text{mm}$), eliminating the risk of crushing or stressing the delicate 10-pin ribbon cable.
+  * Added a standalone laser-cut thin wooden bezel frame ([`laserfiles/fm1_lasercut_screen_frame.svg`](laserfiles/fm1_lasercut_screen_frame.svg)) with decorative accent scoring and an optional clear acrylic dust shield.
+  * Screen ribbon cable repaired and verified running in the physical prototype!
+* **Under-PCB Keyboard Anti-Flex Support Rail:**
+  * The factory PCB lacks mounting screws below the keyboard row ($Y < 44.5\,\text{mm}$), causing the keys to flex. A laser-cut upright support rail (`pcb_lower_support = "laser_rail"`) with 3 mortise tabs locks into the bottom panel and supports the front margin of the PCB flush at $16.76\,\text{mm}$ height without interfering with internal wiring.
+* **Vector Frontplate Engraving Artwork:**
+  * Complete SVG engraving artwork ([`laserfiles/fm1_frontplate_engraving.svg`](laserfiles/fm1_frontplate_engraving.svg)) reproducing all 8 encoder function labels (`MASTER`, `SELECT`, `PRESETS`, `ALGORITHM`, `KNOB1`–`KNOB4`), 7 radial dial graduation ticks, `M-VAVE` / `FM-1` branding, and keyboard octave markers (`C2`–`C5`).
+* **Upgraded 40mm Speaker & Laser-Cut Helmholtz Resonator Stack:**
+  * Upgraded from the tinny 26mm stock capsule to a full-range 40mm driver and a 6-layer laser-cut wood Helmholtz bass-reflex duct stack ([`helmholtz_laser_parts_2d()`](fm1_lasercut_case.scad)), clamped securely with M3 machine screws and vented through the bottom pinwheel grille.
+  * Full acoustic analyses and design logs are archived in [`docs/ACOUSTICS_AND_RESONATOR_PLAN.md`](docs/ACOUSTICS_AND_RESONATOR_PLAN.md) and [`docs/ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md`](docs/ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md).
+* **Streamlined OpenSCAD View Selector:**
+  * Reorganized `part_to_show` right at the top of [`fm1_lasercut_case.scad`](fm1_lasercut_case.scad) into a single, clean dropdown categorized into `3D Views`, `2D Laser Sheet`, `2D Case Panels`, `2D Small Parts`, and `3D Print (STL)` models.
 
 ---
 
