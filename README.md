@@ -2,9 +2,9 @@
 
 <div align="center">
 
-| Finished Laser-Cut Prototype (`first_prototype_case_FM-1.jpg`) | OpenSCAD 3D Assembly (`vintageCase_3dmodel.jpg`) |
-| :---: | :---: |
-| ![Finished Laser-Cut Prototype](photos/first_prototype_case_FM-1.jpg) | ![Vintage Laser-Cut Case 3D Model](photos/vintageCase_3dmodel.jpg) |
+| Working Prototype with Screen Running | Final Prototype Side Profile | OpenSCAD 3D Assembly |
+| :---: | :---: | :---: |
+| ![Working Laser-Cut Prototype with Running Screen](photos/first_protopyecase_top.jpg) | ![Final Case Side View](photos/finalCase_sideview.png) | ![Vintage Laser-Cut Case 3D Model](photos/vintageCase_3dmodel.jpg) |
 
 **Parametric OpenSCAD laser-cut enclosure with tilted faceplate and vintage wooden side cheeks for the [M-VAVE (Cuvave) FM-1](https://www.cuvave.com/product?id=fm-1) 6-operator pocket FM synthesizer.**
 
@@ -94,13 +94,13 @@ Inspecting the rear edge of the PCB and the stock orange switch cap revealed how
 
 ---
 
-### 4. First Prototype Build & Speaker Upgrade
+### 4. Final Prototype Build, Screen Integration & Speaker Upgrade
 
-With the extra internal vertical depth of the tilted vintage enclosure (`case_internal_height = 25 mm` at the front, rising with the `12°` tilt at the rear), the wooden cabinet acts as a resonant acoustic enclosure and provides enough room underneath the PCB to upgrade the tiny `Ø26.5 × 4.2 mm` stock capsule to a **much larger full-range speaker**.
+With the screen ribbon cable repaired and the 1.54" display mounted and running, the laser-cut frontplate holds the FM-1 securely. The extra internal vertical depth of the tilted vintage enclosure (`case_internal_height = 25 mm` at the front, rising with the `12°` tilt at the rear) acts as a resonant acoustic enclosure and provides enough room underneath the PCB to upgrade the tiny `Ø26.5 × 4.2 mm` stock capsule to a **much larger full-range speaker**.
 
-| Prototype Case — Front/3Q View | Prototype Case — Side Cheek Profile | Internal Volume & Bigger Speaker Upgrade |
+| Final Prototype — Screen Running | Final Prototype — Side Cheek Profile | Internal Volume & Bigger Speaker Upgrade |
 | :---: | :---: | :---: |
-| ![First Prototype Case](photos/first_prototype_case_FM-1.jpg) | ![First Prototype Side View](photos/first_protopyecase_side.jpg) | ![Bigger Speaker Upgrade](photos/bigger_speaker.jpg) |
+| ![Final Prototype with Running Screen](photos/first_protopyecase_top.jpg) | ![Final Case Side View](photos/finalCase_sideview.png) | ![Bigger Speaker Upgrade](photos/bigger_speaker.jpg) |
 
 ---
 
@@ -147,18 +147,20 @@ With the extra internal vertical depth of the tilted vintage enclosure (`case_in
 
 ## Known Issues & To-Do
 
-* [ ] **Better Mechanism for the ON/OFF Switch:**
-  * The tiny right-angle SMD slide switch (`J5`) sits on top of the PCB recessed behind the `3.0 mm` wooden back wall. We need to refine and test a reliable, low-play mechanical slider/lever mechanism (or captive guide) so it can be toggled effortlessly from the outside.
-* [ ] **Improve & Finish the Screen Opening Design:**
-  * Finalize the frontplate window and mounting cradle for the 1.54" TFT display (`SCREEN_CX`, `SCREEN_CY`) — adjusting the aperture to frame only the active display area (`~28 × 28 mm`) or adding a laser-cut underside carrier frame so the glass screen is held flush and secure without stressing the fragile 10-pin FPC connector (`J12`).
+* [ ] **Refine Captive ON/OFF Switch Slider:**
+  * The tiny right-angle SMD slide switch (`J5`) sits on top of the PCB recessed behind the `3.0 mm` wooden back wall. Refine the captive slider mechanism ([`power_switch_slider_2d()`](fm1_lasercut_case.scad)) for ultra-smooth operation.
+* [x] **Screen Opening & Wooden Bezel Frame (`screen_mount_style = "bare_screen"`):**
+  * Redesigned the faceplate aperture for the bare 1.54" LCD glass module ($32.0 \times 34.5\,\text{mm}$), with the screen repaired and running. Added an optional laser-cut thin wooden bezel frame ([`laserfiles/fm1_lasercut_screen_frame.svg`](laserfiles/fm1_lasercut_screen_frame.svg)) and transparent acrylic shield.
 * [x] **Upgraded Speaker (`40 × 22 mm` or `50 × 31 mm`) + Aperiodic Variovent & Helmholtz Resonator Options:**
   * Both speaker models (`fm1_aliexpress_40mm_speaker_3d` and `fm1_big_speaker_3d`), the scaled 8-arm curved pinwheel grille (`fm1_pinwheel_grille_2d`), the 3D Spider Bridge Clamp (`speaker_spider_clamp_3d`), the 2-layer laser-cut stepped clamp (`stepped_clamp_laser_layers_2d`), and the wide-body Helmholtz bass-reflex tub (`helmholtz_3d_pod_model`) are built into [`fm1_lasercut_case.scad`](fm1_lasercut_case.scad).
   * **Synth Journalist Editorial Overview:** **[`docs/SYNTH_JOURNALIST_EDITORIAL_OVERVIEW.md`](docs/SYNTH_JOURNALIST_EDITORIAL_OVERVIEW.md)** — Feature article on the physical transformation, acoustic audit, aperiodic epiphany, and workbench sound test.
   * **Peer-Review Engineering Audit & Debate:** **[`docs/PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md`](docs/PEER_REVIEW_DIALOGUE_SYNTH_GEEK_VS_SOUND_ENG.md)** — Critical dialogue between Dr. Viktor Vance ("The Baffle Butcher") and Maker / Synth Geek.
   * **Beginner Visual Guide & Build Instructions:** **[`docs/ACOUSTICS_AND_RESONATOR_PLAN.md`](docs/ACOUSTICS_AND_RESONATOR_PLAN.md)**
   * **Deep Engineering Math, Thiele-Small Tables & Nomographs:** **[`docs/ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md`](docs/ACOUSTICS_DEEP_ENGINEERING_ANALYSIS.md)**
-* [ ] **Frontplate & Rear Panel Engraving:**
-  * Add an engraving layer for the 8 rotary encoder labels (`MASTER`, `SELECT`, `PRESETS`, `ALGORITHM`, `KNOB 1`–`KNOB 4`) and rear port markings.
+* [x] **Frontplate Laser Engraving:**
+  * Vector SVG engraving artwork ([`laserfiles/fm1_frontplate_engraving.svg`](laserfiles/fm1_frontplate_engraving.svg)) covering all 8 rotary encoder labels, dial graduations, FM-1 branding badges, and alignment guides.
+* [x] **Under-PCB Keyboard Support Rail:**
+  * Laser-cut upright support rail (`pcb_lower_support = "laser_rail"`) with mortise-and-tenon tabs locking into the bottom panel eliminates front PCB flex when playing keys.
 
 ---
 
