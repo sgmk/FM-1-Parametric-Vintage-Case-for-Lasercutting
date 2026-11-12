@@ -215,18 +215,34 @@ The stock M-VAVE FM-1 houses a tiny $\varnothing 26.5 \times 4.2\,\text{mm}$ cap
 
 ---
 
-## Known Issues & Future To-Do
+## 🛠️ Actionable Recommendations & Project Roadmap
 
+Following the [dual-perspective review](docs/READABILITY_REVIEW_SYNTH_GEEK_VS_HACKER.md) by Julian "Patchbay" Sterling and Dr. Morgan "Bitstream" Chen, the following high-priority recommendations are queued for the project:
+
+### 1. Hardware & Fabrication Documentation
+* [ ] **Add Universal Bill of Materials (BOM) Table:**
+  * Detail exact fastener specs (6× M2.5 $\times 12\,\text{mm}$ pan-heads for PCB, 6× M2.5 $\times 5\,\text{mm}$ brass standoffs, 3× M3 $\times 30\,\text{mm}$ for Helmholtz duct, 3× M2.5 $\times 8\,\text{mm}$ wood screws for spider clamp).
+  * Detail sheet sizes ($3.0\,\text{mm}$ Baltic Birch, $6.5\,\text{mm}$ hardwood cheeks, $1.0\,\text{mm}$ craft veneer, $0.8\,\text{mm}$ clear acrylic) and acoustic materials ($1.5\,\text{mm}$ EVA foam, polyfill damping).
+* [ ] **CAM Kerf Compensation Guidance:**
+  * Clarify that if laser cutter CAM software (LightBurn, Glowforge) applies automatic kerf offset during slicing, set `kerf = 0.0 mm` in OpenSCAD before exporting to avoid double-compensation jamming.
+* [ ] **Faceplate Thickness & Key Protrusion Advice:**
+  * Note that while standard $3.0\,\text{mm}$ wood works, using a $2.0\text{--}2.5\,\text{mm}$ top faceplate (or reducing `pcb_frontplate_distance = 4.0 mm`) allows the silicone keys to stand proud of the wooden surface for enhanced tactile response.
+* [ ] **Chemical & Thermal Teardown Safety Protocol:**
+  * Document the 99% IPA adhesive softening and gentle 50°C heat protocol to safely release the glued 1.54" LCD without glass fracture, and warn against pulling the PCB while the SMD power switch is engaged to prevent pad shearing.
+
+### 2. Audio, Firmware & Musical Context
+* [ ] **Record & Embed 30-Second Audio Comparison:**
+  * Record a calibrated A/B listening test of the stock plastic squeaker vs. the 40mm wooden case playing classic DX7 patches (*SOLID BASS*, *E.PIANO 1*, *TUB BELLS*).
+* [ ] **SysEx & Patch Loading Quickstart:**
+  * Step-by-step instructions for loading 32-voice Yamaha DX7 `.syx` patch banks via Dexed / MIDI-OX over USB-C.
 * [ ] **Acoustic Benchmarking & Real-World Sound Comparisons:**
-  * While the initial laser-cut Helmholtz duct has been assembled and tested in the prototype, it was glued under preliminary workbench conditions (imperfect layer-to-layer acoustic seal).
-  * Systematically measure and compare sound pressure level (SPL) and bass extension across different real-world acoustic configurations:
-    1. Stock `Ø26.5 mm` capsule in the original plastic shell.
-    2. Upgraded 40mm driver unbaffled inside the open wooden cabinet.
-    3. Fully sealed & M3-clamped 6-layer laser Helmholtz duct.
-    4. 3D-printed curved Helmholtz tub pod ([`helmholtz_3d_pod_model()`](fm1_lasercut_case.scad)).
-* [ ] **Improved Teardown Guide & Screen Extraction Method:**
-  * In the stock Cuvave enclosure, the 1.54" display is heavily glued into the orange front shell while tethered by a short, fragile ribbon cable to connector `J12`.
-  * Develop and document a reliable, repeatable release technique (e.g. gentle localized heat, isopropanol adhesive softening, or a 3D-printed extraction jig) so makers can extract the screen without risking snapping the black FPC latch or tearing the flat flex cable.
+  * Measure and compare sound pressure level (SPL) and bass extension across different physical configurations: stock capsule, unbaffled 40mm driver in open cabinet, M3-clamped 6-layer laser Helmholtz duct, and 3D-printed tub pod ([`helmholtz_3d_pod_model()`](fm1_lasercut_case.scad)).
+* [ ] **Battery Runtime Benchmarks:**
+  * Report real-world playing time on the internal $2000\,\text{mAh}$ LiPo when driving the upgraded 40mm speaker at full volume.
+
+### 3. Digital Fabrication & CAM Enhancements
+* [ ] **Production-Ready 3-Color Laser SVGs (`laserfiles/`):**
+  * Generate a unified multi-layer SVG with `RED` (vector through-cut, hairline 0.01mm), `BLUE` (vector score, 0.05mm), and `BLACK` (raster fill engrave) for direct plug-and-play cutting in LightBurn and K40 Whisperer.
 * [ ] **Fully 3D-Printable Enclosure Fork:**
   * Create a dedicated fork / variant of the vintage desktop case optimized specifically for FDM 3D printing (monolithic chassis with threaded inserts/screw bosses, print-in-place tolerances, integrated acoustic cavity, and curved vintage surfaces rather than 2D laser finger joints).
 
